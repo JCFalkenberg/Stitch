@@ -74,7 +74,7 @@ extension NSEntityDescription {
 }
 
 extension NSManagedObjectModel {
-   func stitchBackingModel() -> NSManagedObjectModel {
+   func copyStitchBackingModel() -> NSManagedObjectModel {
       let backingModel: NSManagedObjectModel = self.copy() as! NSManagedObjectModel
       for entity in backingModel.entities {
          entity.modifyForStitchBackingStore()
@@ -101,5 +101,31 @@ extension NSManagedObjectModel {
       }
 
       return result
+   }
+
+   func syncKeysExcludingAssetKeys(_ excludedAssetKeys: [String]) -> [String] {
+      var keys = Set<String>()
+
+      for entity in self.entities {
+         for (name, property) in entity.propertiesByName {
+            if name == NSEntityDescription.StitchStoreRecordIDAttributeName ||
+               name == NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
+            {
+               continue
+            }
+            if excludedAssetKeys.contains(name) {
+               continue
+            }
+            if property.isTransient {
+               continue
+            }
+            if let relationship = property as? NSRelationshipDescription, relationship.isToMany {
+               continue
+            }
+
+            keys.insert(name)
+         }
+      }
+      return Array(keys)
    }
 }

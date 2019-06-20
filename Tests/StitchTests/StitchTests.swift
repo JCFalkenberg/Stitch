@@ -84,7 +84,7 @@ final class StitchTests: XCTestCase {
       entity.managedObjectClassName = NSStringFromClass(Entry.self)
       model.entities.append(entity)
 
-      let backingModel = model.stitchBackingModel()
+      let backingModel = model.copyStitchBackingModel()
 
       //Make sure our outward model is ok still
       XCTAssertEqual(model.entities.count, 1)
@@ -109,7 +109,7 @@ final class StitchTests: XCTestCase {
          let store = try coordinator.addPersistentStore(ofType: StitchStore.storeType,
                                                         configurationName: nil,
                                                         at: URL(fileURLWithPath: ""),
-                                                        options: nil)
+                                                        options: [:])
          XCTAssertNotNil(store, "Store should not be nil, if there was an error creating the store it should have thrown it")
          XCTAssertEqual(store.type, StitchStore.storeType, "Store should be of type \(StitchStore.storeType)")
          XCTAssert(store.isKind(of: StitchStore.self), "Store should be of class StitchStore")

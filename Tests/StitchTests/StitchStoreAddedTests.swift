@@ -21,7 +21,7 @@ final class StitchStoreAddedTests: XCTestCase {
          let _ = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
                                                      configurationName: nil,
                                                      at: URL(fileURLWithPath: ""),
-                                                     options: nil)
+                                                     options: [:])
          context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
          context?.persistentStoreCoordinator = coordinator
       } catch {
