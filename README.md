@@ -1,19 +1,34 @@
-# Stitch, a CoreData CloudKit sync library
+# Stitch, a CoreData to CloudKit sync library
 
-Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
+### Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
 
+## Warnings
 Stitch like it's namesake has some prickly parts to be aware of right off the bat. 
-* It doesn't suport public databases.
+* It doesn't suport public CloudKit databases.
+* It doesn't support CloudKit shared private databases.
 * It doesn't support direct many to many relationships, but you can work around this by building a linking table entity.
 * It doesn't support batch oerations
 * It doesn't support the store version system
 * It doesn't support ordered relationships
+* Migrations involving renaming or changing properties, entities, or relationships
 * CloudKit containers created with Stitch won't be compatible with CloudKit+CoreData but will be backwards compatible with older OS's
 * You must handle iCloud account observation externally to Stitch.
 * When sync finishes, you must integrate those changes in to your UI.
 * Conflict resolution has been simplified to either server or local record wins.
 
-It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense/
+It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense
+
+## What does it do then?
+
+So after seeing that scary list of sharp points, what does Stitch have to offer?
+* Complete local cache, the store is fully usable offline, and changes will be queued for the next time the user connects to a network with the app open.
+* Assets/External Data can be downloaded separately from the text data, either on demand or just as a separate sync phase (for instance, you can implement a download all assets when on wifi)
+* Stitch supports both adding new entities and new fields to the database. Keep in mind that older versions of your app won't see the new properties until the user updates. Keep this in mind when designing your database.
+* It does support as best it can, *most* NSSQLiteStore features, as the default local backing store is an NSSQLiteStore
+* It does allow for other backing store types, although some may have some issues vs NSSQLiteStore
+* Syncing can happen automatically on save
+* Store sets up CloudKit database zone, and subscription automatically
+* Customizable CloudKit database identifier, zone and subscription names
 
 ## CoreData to CloudKit
 
@@ -21,13 +36,13 @@ It was built primarily for my needs, and I haven't needed these, but I am not op
 
 | CoreData  | CloudKit |
 | ------------- | ------------- |
-| NSDate    | Date/Time |
-| NSData | Bytes | 
-| External NSData | CKAsset |
-| NSString  | String  |
-| Integer16 | Int(64) |
-| Integer32 | Int(64) |
-| Integer64 | Int(64) |
+| Date    | Date/Time |
+| Data | Bytes | 
+| External Stored Data | CKAsset |
+| String  | String  |
+| Int16 | Int(64) |
+| Int32 | Int(64) |
+| Int64 | Int(64) |
 | Decimal | Double | 
 | Float | Double |
 | Boolean | Int(64) |
@@ -64,11 +79,11 @@ This considers the client record as the true record.
 ```swift
 var smStore: StitchStore?
 ```
-- Add a store type of `StitchStoreType` to your app's NSPersistentStoreCoordinator and assign it to the property created in the previous step.
+- Add a store type of `StitchStore.storeType` to your app's NSPersistentStoreCoordinator and assign it to the property created in the previous step.
 ```swift
 do 
 {
-self.smStore = try coordinator.addPersistentStoreWithType(StitchStoreType, configuration: nil, URL: url, options: nil) as? StitchStore
+self.smStore = try coordinator.addPersistentStoreWithType(StitchStore.storeType, configuration: nil, URL: url, options: nil) as? StitchStore
 }
 ```
 - Enable Push Notifications for your app.

@@ -11,22 +11,17 @@ import CoreData
 
 final class StitchStoreAddedTests: XCTestCase {
    var coordinator: NSPersistentStoreCoordinator? = nil
-   var model: NSManagedObjectModel? = nil
    var context: NSManagedObjectContext? = nil
 
    override func setUp() {
       super.setUp()
       do {
-         model = NSManagedObjectModel()
-         let entity = NSEntityDescription()
-         entity.name = "Entry"
-         model?.entities.append(entity)
-
-         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model!)
+         let model = NSManagedObjectModel.StitchTestsModel
+         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
          let _ = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
-                                                     configurationName: "Default",
-                                                     at: URL(fileURLWithPath: "~/Desktop/Testing"),
-                                                     options: [:])
+                                                     configurationName: nil,
+                                                     at: URL(fileURLWithPath: ""),
+                                                     options: nil)
          context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
          context?.persistentStoreCoordinator = coordinator
       } catch {
@@ -40,7 +35,12 @@ final class StitchStoreAddedTests: XCTestCase {
    }
 
    func testAddObject() {
-      XCTAssert(true, "Testing")
+//      if let context = context {
+//         let entry = TestEntry(entity: TestEntry.entity(), insertInto: context)
+//         XCTAssertNotNil(entry)
+//      } else {
+//         XCTFail("Context should not be nil")
+//      }
    }
 
    static var allTests = [

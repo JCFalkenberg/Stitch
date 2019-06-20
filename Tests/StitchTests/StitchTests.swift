@@ -9,6 +9,34 @@ import XCTest
 import CoreData
 @testable import Stitch
 
+class TestEntry: NSManagedObject {}
+
+extension NSManagedObjectModel {
+   /*
+    Make this a better model with actual things to validate
+    */
+   static var StitchTestsModel: NSManagedObjectModel = {
+      var model = NSManagedObjectModel()
+      let entity = NSEntityDescription()
+      entity.name = NSStringFromClass(TestEntry.self)
+      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
+      model.entities.append(entity)
+      return model
+   }()
+
+   /*
+    A model with missing inverses and many to many relationships
+    */
+   static var StitchTestFailModel: NSManagedObjectModel = {
+      var model = NSManagedObjectModel()
+      let entity = NSEntityDescription()
+      entity.name = NSStringFromClass(TestEntry.self)
+      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
+      model.entities.append(entity)
+      return model
+   }()
+}
+
 final class StitchTests: XCTestCase {
    override func setUp() {
       super.setUp()
@@ -23,10 +51,9 @@ final class StitchTests: XCTestCase {
    }
 
    func testEntityModifier() {
-      class Entry: NSManagedObject {}
       let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(Entry.self)
-      entity.managedObjectClassName = NSStringFromClass(Entry.self)
+      entity.name = NSStringFromClass(TestEntry.self)
+      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
 
       entity.modifyForStitchBackingStore()
       XCTAssertEqual(entity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
@@ -44,7 +71,9 @@ final class StitchTests: XCTestCase {
    }
 
    func testModelValidator() {
-      
+      XCTAssertTrue(NSManagedObjectModel.StitchTestsModel.validateStitchStoreModel())
+      //Need to implement the above
+//      XCTAssertFalse(NSManagedObjectModel.StitchTestFailModel.validateStitchStoreModel())
    }
 
    func testModifyModel() {
@@ -74,17 +103,13 @@ final class StitchTests: XCTestCase {
    }
 
    func testAddStore() {
-      let model = NSManagedObjectModel()
-      let entity = NSEntityDescription()
-      entity.name = "Entry"
-      model.entities.append(entity)
-
+      let model = NSManagedObjectModel.StitchTestsModel
       let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
       do {
          let store = try coordinator.addPersistentStore(ofType: StitchStore.storeType,
-                                                        configurationName: "Default",
-                                                        at: URL(fileURLWithPath: "~/Desktop/Tests"),
-                                                        options: [:])
+                                                        configurationName: nil,
+                                                        at: URL(fileURLWithPath: ""),
+                                                        options: nil)
          XCTAssertNotNil(store, "Store should not be nil, if there was an error creating the store it should have thrown it")
          XCTAssertEqual(store.type, StitchStore.storeType, "Store should be of type \(StitchStore.storeType)")
          XCTAssert(store.isKind(of: StitchStore.self), "Store should be of class StitchStore")
@@ -98,5 +123,6 @@ final class StitchTests: XCTestCase {
       ("testAddStore", testAddStore),
       ("testEntityModifier", testEntityModifier),
       ("testChangeSetEntity", testChangeSetEntity),
+      ("testModelValidator", testModelValidator)
    ]
 }
