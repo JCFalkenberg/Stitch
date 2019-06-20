@@ -7,6 +7,8 @@ Stitch like it's namesake has some prickly parts to be aware of right off the ba
 * It doesn't support direct many to many relationships, but you can work around this by building a linking table entity.
 * It doesn't support batch oerations
 * It doesn't support the store version system
+* It doesn't support ordered relationships
+* CloudKit containers created with Stitch won't be compatible with CloudKit+CoreData but will be backwards compatible with older OS's
 * You must handle iCloud account observation externally to Stitch.
 * When sync finishes, you must integrate those changes in to your UI.
 * Conflict resolution has been simplified to either server or local record wins.
