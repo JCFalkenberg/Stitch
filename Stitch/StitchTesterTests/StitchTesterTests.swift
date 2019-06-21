@@ -26,7 +26,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
             StitchStore.Options.ConnectionStatusDelegate : self
          ]
          store = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
-                                                     configurationName: nil,
+                                                     configurationName: "Success",
                                                      at: URL(fileURLWithPath: ""),
                                                      options: options) as? StitchStore
          XCTAssertNotNil(store)
@@ -52,7 +52,8 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
          return
       }
 
-      let entry = TestEntry(entity: TestEntry.entity(), insertInto: context)
+      let entry = Entry(entity: Entry.entity(), insertInto: context)
+      entry.text = "be gay do crimes fk cops"
       XCTAssertNotNil(entry)
       do {
          try context.save()

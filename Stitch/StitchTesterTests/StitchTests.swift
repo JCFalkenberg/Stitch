@@ -7,33 +7,15 @@
 //
 
 import XCTest
+import Cocoa
 @testable import Stitch
 
-class TestEntry: NSManagedObject {}
-
 extension NSManagedObjectModel {
-   /*
-    Make this a better model with actual things to validate
-    */
+   /// The model will have a success and failure
    static var StitchTestsModel: NSManagedObjectModel = {
-      var model = NSManagedObjectModel()
-      let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(TestEntry.self)
-      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
-      model.entities.append(entity)
-      return model
-   }()
-
-   /*
-    A model with missing inverses and many to many relationships
-    */
-   static var StitchTestFailModel: NSManagedObjectModel = {
-      var model = NSManagedObjectModel()
-      let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(TestEntry.self)
-      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
-      model.entities.append(entity)
-      return model
+      let bundle = Bundle(for: StitchTests.self)
+      guard let url = bundle.url(forResource: "TestModel", withExtension: "momd") else { return NSManagedObjectModel() }
+      return NSManagedObjectModel(contentsOf: url) ?? NSManagedObjectModel()
    }()
 }
 
@@ -52,8 +34,8 @@ final class StitchTests: XCTestCase {
 
    func testEntityModifier() {
       let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(TestEntry.self)
-      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
+      entity.name = NSStringFromClass(Entry.self)
+      entity.managedObjectClassName = NSStringFromClass(Entry.self)
 
       entity.modifyForStitchBackingStore()
       XCTAssertEqual(entity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
@@ -70,29 +52,36 @@ final class StitchTests: XCTestCase {
       XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreChangeQueuedAttributeName])
    }
 
+   func testTestModel() {
+      let model = NSManagedObjectModel.StitchTestsModel
+      XCTAssertEqual(model.configurations.count, 3)
+      XCTAssert(model.configurations.contains("PF_DEFAULT_CONFIGURATION_NAME"))
+      XCTAssert(model.configurations.contains("Success"))
+      XCTAssert(model.configurations.contains("Failure"))
+      XCTAssertEqual(model.entities.count, 7)
+   }
+
    func testModelValidator() {
-      XCTAssertTrue(NSManagedObjectModel.StitchTestsModel.validateStitchStoreModel())
-      //Need to implement the above
-      //      XCTAssertFalse(NSManagedObjectModel.StitchTestFailModel.validateStitchStoreModel())
+      let model = NSManagedObjectModel.StitchTestsModel
+      XCTAssertTrue(model.validateStitchStoreModel(for: "Success"))
+      XCTAssertFalse(model.validateStitchStoreModel(for: "Failure"))
+      XCTAssertFalse(model.validateStitchStoreModel(for: "DoesntExist"))
    }
 
    func testModifyModel() {
-      class Entry: NSManagedObject {}
-      let model = NSManagedObjectModel()
-      let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(Entry.self)
-      entity.managedObjectClassName = NSStringFromClass(Entry.self)
-      model.entities.append(entity)
+      let model = NSManagedObjectModel.StitchTestsModel
+      let entity = model.entitiesByName[NSStringFromClass(Entry.self)]
+      XCTAssertNotNil(entity)
 
       let backingModel = model.copyStitchBackingModel()
 
       //Make sure our outward model is ok still
-      XCTAssertEqual(model.entities.count, 1)
-      XCTAssertEqual(entity.managedObjectClassName, NSStringFromClass(Entry.self))
-      XCTAssertNil(entity.attributesByName[NSEntityDescription.StitchStoreRecordIDAttributeName])
-      XCTAssertNil(entity.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
+      XCTAssertEqual(model.entities.count, 7)
+      XCTAssertEqual(entity?.managedObjectClassName, NSStringFromClass(Entry.self))
+      XCTAssertNil(entity?.attributesByName[NSEntityDescription.StitchStoreRecordIDAttributeName])
+      XCTAssertNil(entity?.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
 
-      XCTAssertEqual(backingModel.entities.count, 2)
+      XCTAssertEqual(backingModel.entities.count, 8)
       XCTAssertNotNil(backingModel.entitiesByName[NSStringFromClass(Entry.self)])
       let backingEntity = backingModel.entitiesByName[NSStringFromClass(Entry.self)]!
       XCTAssertEqual(backingEntity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
@@ -107,7 +96,7 @@ final class StitchTests: XCTestCase {
       let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
       do {
          let store = try coordinator.addPersistentStore(ofType: StitchStore.storeType,
-                                                        configurationName: nil,
+                                                        configurationName: "Success",
                                                         at: URL(fileURLWithPath: ""),
                                                         options: [ StitchStore.Options.BackingStoreType : NSInMemoryStoreType ])
          XCTAssertNotNil(store, "Store should not be nil, if there was an error creating the store it should have thrown it")

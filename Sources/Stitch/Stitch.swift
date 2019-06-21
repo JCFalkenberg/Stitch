@@ -91,6 +91,9 @@ public class StitchStore: NSIncrementalStore {
    enum StitchStoreError: Error {
       case backingStoreFetchRequestError
       case invalidRequest
+      case invalidBackingStoreType
+      case invalidStoreModelForConfiguration
+      case errorCreatingStoreDirectory(underlyingError: NSError?)
       case backingStoreCreationFailed(underlyingError: NSError?)
    }
 
@@ -255,9 +258,12 @@ public class StitchStore: NSIncrementalStore {
    override public func loadMetadata() throws {
       let storeType = options?[Options.BackingStoreType] as? String ?? NSSQLiteStoreType
       if !NSPersistentStoreCoordinator.registeredStoreTypes.keys.contains(storeType) {
-         throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil)
+         throw StitchStoreError.invalidBackingStoreType
       }
       guard let backingModel = backingModel else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
+      if !backingModel.validateStitchStoreModel(for: configurationName) {
+         throw StitchStoreError.invalidStoreModelForConfiguration
+      }
       self.backingPersistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: backingModel)
 
       var storeURL: URL? = self.url
@@ -272,7 +278,7 @@ public class StitchStore: NSIncrementalStore {
                                                     attributes: nil)
          } catch {
             let nserror = error as NSError
-            throw StitchStoreError.backingStoreCreationFailed(underlyingError: nserror)
+            throw StitchStoreError.errorCreatingStoreDirectory(underlyingError: nserror)
          }
       }
 
@@ -301,7 +307,6 @@ public class StitchStore: NSIncrementalStore {
             }
          }
          self.setMetadata(changedEntitesToMigrate.count > 0 ? changedEntitesToMigrate : nil, key: Metadata.ChangedEntitiesToMigrate)
-
 
          self.identifier = metadata[NSStoreUUIDKey] as? String
       } catch {

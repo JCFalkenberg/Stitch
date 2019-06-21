@@ -83,9 +83,13 @@ extension NSManagedObjectModel {
       return backingModel
    }
 
-   func validateStitchStoreModel() -> Bool {
+   func validateStitchStoreModel(for configuration: String? = nil) -> Bool {
       var result = true
-      for entity in entities {
+      if !configurations.contains(configuration ?? "Default") {
+         print("model has no configuration named \(configuration ?? "Default")")
+         result = false
+      }
+      for entity in entities(forConfigurationName: configuration ?? "Default") ?? [] {
          for (_, relationship) in entity.relationshipsByName {
             if let inverse = relationship.inverseRelationship {
                if relationship.isToMany && inverse.isToMany {
