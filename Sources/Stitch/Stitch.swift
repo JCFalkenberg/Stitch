@@ -34,7 +34,7 @@ public let StitchStoreLastSyncCompletedKey = "SMStoreLastSyncCompletedKey"
 public let StitchStoreChangedEntitiesToMigrate = "SMStoreChangedEntitiesToMigrate"
 
 /// StitchStore: A CloudKit syncing NSIncrementalStore implementation
-class StitchStore: NSIncrementalStore {
+public class StitchStore: NSIncrementalStore {
    /// RecordChange: Enum used for tracking changes in the database in our backing store's extra enttiy for that
    internal enum RecordChange: Int16 {
       /// noChange: Unused, but if there was a reason to, this is what it would be in the DB field
@@ -190,7 +190,6 @@ class StitchStore: NSIncrementalStore {
                        at url: URL,
                        options: [AnyHashable: Any]?)
    {
-
       guard let rooted = root else {
          super.init(persistentStoreCoordinator: root, configurationName: name, at: url, options: options)
          return
@@ -242,7 +241,7 @@ class StitchStore: NSIncrementalStore {
          if let existingHash = existingHashes[entityName] {
             if entity.versionHash != existingHash {
                print("new version for \(entityName)")
-               changletntitesToMigrate.append(entityName)
+               changedEntitesToMigrate.append(entityName)
             }
          } else {
             print("new entity \(entityName)")
@@ -253,28 +252,39 @@ class StitchStore: NSIncrementalStore {
       super.init(persistentStoreCoordinator: rooted, configurationName: name, at: url, options: options)
    }
 
-   override func loadMetadata() throws {
-      guard let baseURL = self.url else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
+   override public func loadMetadata() throws {
+      let storeType = options?[Options.BackingStoreType] as? String ?? NSSQLiteStoreType
+      if !NSPersistentStoreCoordinator.registeredStoreTypes.keys.contains(storeType) {
+         throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil)
+      }
       guard let backingModel = backingModel else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
-      guard let tokenURL = tokenURL else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
-
-      let storeURL = baseURL.appendingPathComponent(baseURL.lastPathComponent)
       self.backingPersistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: backingModel)
-      do {
-         try FileManager.default.createDirectory(at: baseURL,
-                                                 withIntermediateDirectories: true,
-                                                 attributes: nil)
 
-         let storeType = options?[Options.BackingStoreType] as? String ?? NSSQLiteStoreType
-         if !NSPersistentStoreCoordinator.registeredStoreTypes.keys.contains(storeType) {
-            throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil)
+      var storeURL: URL? = self.url
+      let tokenURL = self.tokenURL
+      if storeType != NSInMemoryStoreType {
+         guard let baseURL = self.url else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
+
+         storeURL = baseURL.appendingPathComponent(baseURL.lastPathComponent)
+         do {
+            try FileManager.default.createDirectory(at: baseURL,
+                                                    withIntermediateDirectories: true,
+                                                    attributes: nil)
+         } catch {
+            let nserror = error as NSError
+            throw StitchStoreError.backingStoreCreationFailed(underlyingError: nserror)
          }
+      }
+
+      do {
          self.backingPersistentStore = try self.backingPersistentStoreCoordinator?.addPersistentStore(ofType: storeType,
                                                                                                       configurationName: configurationName,
                                                                                                       at: storeURL,
                                                                                                       options: options)
 
-         if let diskMetadata = NSDictionary(contentsOf: tokenURL) as? [String : AnyObject] {
+         if let tokenURL = tokenURL,
+            let diskMetadata = NSDictionary(contentsOf: tokenURL) as? [String : AnyObject]
+         {
             metadata = diskMetadata
          } else {
             let uuid = ProcessInfo().globallyUniqueString
@@ -318,15 +328,15 @@ class StitchStore: NSIncrementalStore {
       #endif
    }
 
-   override func execute(_ request: NSPersistentStoreRequest, with context: NSManagedObjectContext?) throws -> Any {
+   override public func execute(_ request: NSPersistentStoreRequest, with context: NSManagedObjectContext?) throws -> Any {
       return []
    }
 
-   override func newValuesForObject(with objectID: NSManagedObjectID,
+   override public func newValuesForObject(with objectID: NSManagedObjectID,
                                     with context: NSManagedObjectContext) throws -> NSIncrementalStoreNode {
       return NSIncrementalStoreNode()
    }
-   override func newValue(forRelationship relationship: NSRelationshipDescription,
+   override public func newValue(forRelationship relationship: NSRelationshipDescription,
                           forObjectWith objectID: NSManagedObjectID,
                           with context: NSManagedObjectContext?) throws -> Any
    {
