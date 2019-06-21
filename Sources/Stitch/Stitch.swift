@@ -89,6 +89,7 @@ public class StitchStore: NSIncrementalStore {
    }
 
    enum StitchStoreError: Error {
+      case missingBackingContextError
       case backingStoreFetchRequestError
       case invalidRequest
       case invalidBackingStoreType
@@ -334,6 +335,27 @@ public class StitchStore: NSIncrementalStore {
    }
 
    override public func execute(_ request: NSPersistentStoreRequest, with context: NSManagedObjectContext?) throws -> Any {
+      guard context != nil else { throw StitchStoreError.missingBackingContextError }
+      var results: Any? = nil
+      switch request.requestType {
+      case .fetchRequestType:
+         guard let request = request as? NSFetchRequest<NSFetchRequestResult> else { throw StitchStoreError.invalidRequest }
+         results = try fetch(request)
+      case .saveRequestType:
+         guard let request = request as? NSSaveChangesRequest else { throw StitchStoreError.invalidRequest }
+         results = try save(request)
+      default: //In the future it would be nice to support batchUpdateRequestType and batchDeleteRequestType
+         throw StitchStoreError.invalidRequest
+      }
+
+      return results ?? []
+   }
+
+   fileprivate func fetch(_ request: NSFetchRequest<NSFetchRequestResult>) throws -> [Any]? {
+      return []
+   }
+
+   fileprivate func save(_ request: NSSaveChangesRequest) throws -> [Any] {
       return []
    }
 
