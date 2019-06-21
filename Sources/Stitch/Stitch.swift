@@ -43,7 +43,7 @@ class StitchStore: NSIncrementalStore {
       case updated  = 1
       /// deleted: This record in the change log is a deleted record
       case deleted  = 2
-      ///
+      /// isnerted: This record in the change log is an inserted record
       case inserted = 3
    }
 
