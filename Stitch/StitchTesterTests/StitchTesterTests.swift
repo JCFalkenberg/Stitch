@@ -10,44 +10,20 @@ import XCTest
 import CoreData
 @testable import Stitch
 
-class TestEntry: NSManagedObject {}
-extension NSManagedObjectModel {
-   /*
-    Make this a better model with actual things to validate
-    */
-   static var StitchTestsModel: NSManagedObjectModel = {
-      var model = NSManagedObjectModel()
-      let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(TestEntry.self)
-      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
-      model.entities.append(entity)
-      return model
-   }()
-
-   /*
-    A model with missing inverses and many to many relationships
-    */
-   static var StitchTestFailModel: NSManagedObjectModel = {
-      var model = NSManagedObjectModel()
-      let entity = NSEntityDescription()
-      entity.name = NSStringFromClass(TestEntry.self)
-      entity.managedObjectClassName = NSStringFromClass(TestEntry.self)
-      model.entities.append(entity)
-      return model
-   }()
-}
-
-class StitchTesterTests: XCTestCase {
+class StitchTesterTests: XCTestCase, StitchConnectionStatus {
    var coordinator: NSPersistentStoreCoordinator? = nil
    var context: NSManagedObjectContext? = nil
    var store: StitchStore? = nil
+
+   var internetConnectionAvailable: Bool { return false }
 
    override func setUp() {
       do {
          let model = NSManagedObjectModel.StitchTestsModel
          coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
-         let options =  [
-            StitchStore.Options.BackingStoreType : NSInMemoryStoreType
+         let options: [String: Any] =  [
+            StitchStore.Options.BackingStoreType : NSInMemoryStoreType,
+            StitchStore.Options.ConnectionStatusDelegate : self
          ]
          store = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
                                                      configurationName: nil,
@@ -71,7 +47,18 @@ class StitchTesterTests: XCTestCase {
    }
 
    func testAddObject() {
-      // Use recording to get started writing UI tests.
-      // Use XCTAssert and related functions to verify your tests produce the correct results.
+      guard let context = context else {
+         XCTFail("Context should not be nil")
+         return
+      }
+
+      let entry = TestEntry(entity: TestEntry.entity(), insertInto: context)
+      XCTAssertNotNil(entry)
+      do {
+         try context.save()
+      } catch {
+         XCTFail("Database should save ok")
+      }
+      // Check the store for the insertion record
    }
 }
