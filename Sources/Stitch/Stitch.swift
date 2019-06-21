@@ -89,6 +89,7 @@ public class StitchStore: NSIncrementalStore {
    }
 
    enum StitchStoreError: Error {
+      case missingBackingPersistentStoreError
       case missingBackingContextError
       case backingStoreFetchRequestError
       case invalidRequest
@@ -170,11 +171,19 @@ public class StitchStore: NSIncrementalStore {
       return storeURL.appendingPathComponent("cloudKitToken")
    }
 
-   fileprivate var conflictPolicy: ConflictPolicy = ConflictPolicy.serverWins
+   lazy var backingMOC: NSManagedObjectContext = {
+      var moc = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+      moc.persistentStoreCoordinator = self.backingPersistentStoreCoordinator
+      moc.retainsRegisteredObjects = true
+      moc.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy
+      return moc
+   }()
+
+   var conflictPolicy: ConflictPolicy = ConflictPolicy.serverWins
    var database: CKDatabase?
    var backingModel: NSManagedObjectModel? = nil
-   fileprivate var backingPersistentStoreCoordinator: NSPersistentStoreCoordinator?
-   fileprivate var backingPersistentStore: NSPersistentStore?
+   var backingPersistentStoreCoordinator: NSPersistentStoreCoordinator?
+   var backingPersistentStore: NSPersistentStore?
    var syncAutomatically: Bool = true
    var syncAgain: Bool = false
    var nextSyncReason: SyncTriggerType = .localSave
@@ -185,7 +194,7 @@ public class StitchStore: NSIncrementalStore {
 
    var excludedUnchangingAsyncAssetKeys = [String]()
    var keysToSync: [String]?
-   fileprivate var fetchPredicateReplacementOption: Bool = false
+   var fetchPredicateReplacementOption: Bool = false
 
    weak open var connectionStatus : StitchConnectionStatus? = nil
 
@@ -334,13 +343,15 @@ public class StitchStore: NSIncrementalStore {
       #endif
    }
 
-   override public func execute(_ request: NSPersistentStoreRequest, with context: NSManagedObjectContext?) throws -> Any {
-      guard context != nil else { throw StitchStoreError.missingBackingContextError }
+   override public func execute(_ request: NSPersistentStoreRequest,
+                                with context: NSManagedObjectContext?) throws -> Any
+   {
+      guard let context = context else { throw StitchStoreError.invalidRequest }
       var results: Any? = nil
       switch request.requestType {
       case .fetchRequestType:
          guard let request = request as? NSFetchRequest<NSFetchRequestResult> else { throw StitchStoreError.invalidRequest }
-         results = try fetch(request)
+         results = try fetch(request, context: context)
       case .saveRequestType:
          guard let request = request as? NSSaveChangesRequest else { throw StitchStoreError.invalidRequest }
          results = try save(request)
@@ -351,8 +362,50 @@ public class StitchStore: NSIncrementalStore {
       return results ?? []
    }
 
-   fileprivate func fetch(_ request: NSFetchRequest<NSFetchRequestResult>) throws -> [Any]? {
-      return []
+   fileprivate func fetch(_ fetchRequest: NSFetchRequest<NSFetchRequestResult>,
+                          context: NSManagedObjectContext) throws -> [Any]?
+   {
+      guard let request = fetchRequest.transfer(to: self) else { throw StitchStoreError.invalidRequest }
+
+      var mappedResults = [AnyObject]()
+      self.backingMOC.performAndWait { () -> Void in
+         do {
+            let resultsFromLocalStore = try self.backingMOC.fetch(request)
+            if resultsFromLocalStore.count > 0 {
+               for object in resultsFromLocalStore {
+                  if let object = object as? NSManagedObject {
+                     mappedResults.append(object.objectID)
+                  } else if let objectID = object as? NSManagedObjectID {
+                     mappedResults.append(objectID)
+                  } else if let dictionary = object as? NSDictionary {
+                     mappedResults.append(dictionary)
+                  } else if let count = object as? NSNumber {
+                     mappedResults.append(count)
+                  }
+               }
+            }
+         } catch {
+            print("Error executing fetch request!")
+         }
+      }
+      mappedResults = mappedResults.map{ (object: AnyObject) -> AnyObject in
+         var result: AnyObject = object
+         switch request.resultType {
+         case .managedObjectResultType:
+            if let object = object as? NSManagedObjectID {
+               let outwardID = outwardManagedObjectID(object)
+               result = context.object(with: outwardID)
+            }
+         case .managedObjectIDResultType:
+            if let object = object as? NSManagedObjectID {
+               result = outwardManagedObjectID(object)
+            }
+         default:
+            result = object
+         }
+         return result
+      }
+      return mappedResults
    }
 
    fileprivate func save(_ request: NSSaveChangesRequest) throws -> [Any] {
@@ -368,5 +421,34 @@ public class StitchStore: NSIncrementalStore {
                           with context: NSManagedObjectContext?) throws -> Any
    {
       return []
+   }
+
+   func backingObject(for referenceString: String, entity: String) -> NSManagedObject? {
+      do {
+         let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity)
+         fetchRequest.predicate = NSPredicate(format: "%K == %@", NSEntityDescription.StitchStoreRecordIDAttributeName, referenceString)
+         fetchRequest.fetchLimit = 1
+         let results = try self.backingMOC.fetch(fetchRequest)
+         return results.last
+      } catch {
+         print("Error retrieving objects in backing store")
+      }
+      return nil
+   }
+
+   fileprivate func outwardManagedObjectID(_ backingID: NSManagedObjectID) -> NSManagedObjectID {
+      var recordID : String = ""
+      var entityName : String = ""
+      self.backingMOC.performAndWait { () -> Void in
+         let value = self.backingMOC.object(with: backingID)
+         recordID = value.value(forKey: NSEntityDescription.StitchStoreRecordIDAttributeName) as! String
+         entityName = value.entity.name!
+      }
+      return outwardManagedObjectIDForRecordEntity(recordID, entityName: entityName)
+   }
+   fileprivate func outwardManagedObjectIDForRecordEntity(_ recordID: String, entityName: String) -> NSManagedObjectID {
+      let entity = self.persistentStoreCoordinator!.managedObjectModel.entitiesByName[entityName]
+      let objectID = self.newObjectID(for: entity!, referenceObject: recordID)
+      return objectID
    }
 }
