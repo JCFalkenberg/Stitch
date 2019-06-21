@@ -82,13 +82,36 @@ final class StitchTests: XCTestCase {
       XCTAssertNil(entity?.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
 
       XCTAssertEqual(backingModel.entities.count, 8)
-      XCTAssertNotNil(backingModel.entitiesByName[NSStringFromClass(Entry.self)])
       let backingEntity = backingModel.entitiesByName[NSStringFromClass(Entry.self)]!
+      XCTAssertNotNil(backingEntity)
       XCTAssertEqual(backingEntity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
       XCTAssertNotNil(backingEntity.attributesByName[NSEntityDescription.StitchStoreRecordIDAttributeName])
       XCTAssertNotNil(backingEntity.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
 
       XCTAssertNotNil(backingModel.entitiesByName[NSEntityDescription.StitchStoreChangeSetEntityName])
+   }
+
+   func testAddFailure() {
+      let model = NSManagedObjectModel.StitchTestsModel
+      let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
+      do {
+         let store = try coordinator.addPersistentStore(ofType: StitchStore.storeType,
+                                                        configurationName: "Failure",
+                                                        at: URL(fileURLWithPath: ""),
+                                                        options: [ StitchStore.Options.BackingStoreType : NSInMemoryStoreType ])
+         XCTAssertNil(store)
+      } catch {
+         if let error = error as? Stitch.StitchStore.StitchStoreError {
+            switch error {
+            case .invalidStoreModelForConfiguration:
+               XCTAssertTrue(true)
+            default:
+               XCTFail("The wrong error was thrown for the above store add attempt")
+            }
+         } else {
+            XCTFail("The wrong error was thrown for the above store add attempt")
+         }
+      }
    }
 
    func testAddStore() {
