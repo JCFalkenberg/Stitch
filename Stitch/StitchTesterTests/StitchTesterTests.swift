@@ -68,7 +68,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
    func testAddObject() {
       XCTAssertNotNil(addEntryAndSave())
-      // Test whether the backing store has the appropriate entry in it for a change
+      // Test whether the backing store has the appropriate entry in it for an add
    }
 
    func testModifyObject() {
@@ -78,5 +78,17 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
       save()
       // Test whether the backing store has the appropriate entry in it for a change
+   }
+
+   func testDeleteObject() {
+      guard let entry = addEntryAndSave() else {
+         XCTFail("Unable to create entry")
+         return
+      }
+
+      context?.delete(entry)
+
+      save()
+      // Test whether the backing store has the appropriate entry in it for a delete
    }
 }

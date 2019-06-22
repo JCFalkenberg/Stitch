@@ -590,6 +590,33 @@ public class StitchStore: NSIncrementalStore {
    fileprivate func deleteFromBacking(_ objects: Set<NSManagedObject>,
                                       mainContext: NSManagedObjectContext) throws
    {
+      if objects.count == 0 { return }
+      var caughtError: Error? = nil
+      backingMOC.performAndWait { () -> Void in
+         for sourceObject in objects {
+            guard let referenceObject: String = referenceObject(for: sourceObject.objectID) as? String else {
+               caughtError = StitchStoreError.invalidReferenceObject
+               break
+            }
+            let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: sourceObject.entity.name!)
+            fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
+            fetchRequest.fetchLimit = 1
+
+            do {
+               let results = try self.backingMOC.fetch(fetchRequest)
+               guard let backingObject = results.last else { continue }
+               createChangeSet(forDeleted: referenceObject)
+               backingMOC.delete(backingObject)
+            } catch {
+               caughtError = error
+               print("Error updating objects in backing store \(error)")
+               break
+            }
+         }
+      }
+      if let caughtError = caughtError {
+         throw caughtError
+      }
    }
 
    fileprivate func updateInBacking(_ objects: Set<NSManagedObject>) throws
