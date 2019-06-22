@@ -13,7 +13,14 @@ extension NSManagedObjectModel {
       for entity in backingModel.entities {
          entity.modifyForStitchBackingStore()
       }
-      backingModel.entities.append(NSEntityDescription.changeSetEntity())
+      let changeSetEntity = NSEntityDescription.changeSetEntity()
+      backingModel.entities.append(changeSetEntity)
+      // TODO: Add test for this
+      for configuration in backingModel.configurations {
+         let configEntities = backingModel.entities(forConfigurationName: configuration) ?? []
+         backingModel.setEntities(configEntities + [changeSetEntity],
+                                  forConfigurationName: configuration)
+      }
       return backingModel
    }
 
@@ -67,7 +74,7 @@ extension NSManagedObjectModel {
       return Array(keys)
    }
 
-   func backingProperties(for outwardProperties: [NSPropertyDescription],
+   func backingProperties(for outwardProperties: [Any],
                                       on entity: NSEntityDescription) -> [NSPropertyDescription]
    {
       var results: [NSPropertyDescription] = []

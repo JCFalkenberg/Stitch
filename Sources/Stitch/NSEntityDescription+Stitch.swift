@@ -28,10 +28,11 @@ extension NSEntityDescription {
    static let StitchStoreRecordIDAttributeName                = "sm_LocalStore_RecordID"
    static let StitchStoreRecordEncodedValuesAttributeName     = "sm_LocalStore_EncodedValues"
 
-   convenience init(_ name: String, attributes: [NSAttributeDescription]) {
+   convenience init(_ name: String, attributes: [NSAttributeDescription], className: String = NSStringFromClass(NSManagedObject.self)) {
       self.init()
       self.name = name
       self.properties.append(contentsOf: attributes)
+      managedObjectClassName = className
    }
 
    func modifyForStitchBackingStore() {
@@ -70,6 +71,7 @@ extension NSEntityDescription {
       ]
 
       return NSEntityDescription(StitchStoreChangeSetEntityName,
-                                 attributes: attributes)
+                                 attributes: attributes,
+                                 className: NSStringFromClass(ChangeSet.self))
    }
 }

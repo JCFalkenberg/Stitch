@@ -554,7 +554,8 @@ public class StitchStore: NSIncrementalStore {
       var caughtError: Error? = nil
       self.backingMOC.performAndWait({ () -> Void in
          for sourceObject in objects {
-            let managedObject = NSEntityDescription.insertNewObject(forEntityName: (sourceObject.entity.name)!, into: self.backingMOC)
+            let managedObject = NSEntityDescription.insertNewObject(forEntityName: (sourceObject.entity.name)!,
+                                                                    into: self.backingMOC)
             let keys = Array(sourceObject.entity.attributesByName.keys)
             let dictionary = sourceObject.dictionaryWithValues(forKeys: keys)
             managedObject.setValuesForKeys(dictionary)
@@ -567,9 +568,8 @@ public class StitchStore: NSIncrementalStore {
             do {
                try backingMOC.obtainPermanentIDs(for: [managedObject])
 
-//               SMStoreChangeSetHandler.createChangeSet(ForInsertedObjectRecordID: referenceObject,
-//                                                       entityName: sourceObject.entity.name!,
-//                                                       backingContext: backingMOC)
+               createChangeSet(forInserted: referenceObject,
+                               entityName: sourceObject.entity.name!)
             } catch {
                caughtError = error
                print("Error inserting object in backing store \(error)")
