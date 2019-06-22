@@ -437,65 +437,8 @@ public class StitchStore: NSIncrementalStore {
       return results ?? []
    }
 
-   fileprivate func fetch(_ fetchRequest: NSFetchRequest<NSFetchRequestResult>,
-                          context: NSManagedObjectContext) throws -> [Any]?
-   {
-      guard let request = fetchRequest.transfer(to: self) else { throw StitchStoreError.invalidRequest }
-
-      var mappedResults = [AnyObject]()
-      self.backingMOC.performAndWait { () -> Void in
-         do {
-            let resultsFromLocalStore = try self.backingMOC.fetch(request)
-            if resultsFromLocalStore.count > 0 {
-               for object in resultsFromLocalStore {
-                  if let object = object as? NSManagedObject {
-                     mappedResults.append(object.objectID)
-                  } else if let objectID = object as? NSManagedObjectID {
-                     mappedResults.append(objectID)
-                  } else if let dictionary = object as? NSDictionary {
-                     mappedResults.append(dictionary)
-                  } else if let count = object as? NSNumber {
-                     mappedResults.append(count)
-                  }
-               }
-            }
-         } catch {
-            print("Error executing fetch request!")
-         }
-      }
-      mappedResults = mappedResults.map{ (object: AnyObject) -> AnyObject in
-         var result: AnyObject = object
-         switch request.resultType {
-         case .managedObjectResultType:
-            if let object = object as? NSManagedObjectID {
-               let outwardID = outwardManagedObjectID(object)
-               result = context.object(with: outwardID)
-            }
-         case .managedObjectIDResultType:
-            if let object = object as? NSManagedObjectID {
-               result = outwardManagedObjectID(object)
-            }
-         default:
-            result = object
-         }
-         return result
-      }
-      return mappedResults
-   }
-
    public override func referenceObject(for objectID: NSManagedObjectID) -> Any {
       return "\(super.referenceObject(for: objectID))"
-   }
-
-   override public func newValuesForObject(with objectID: NSManagedObjectID,
-                                    with context: NSManagedObjectContext) throws -> NSIncrementalStoreNode {
-      return NSIncrementalStoreNode()
-   }
-   override public func newValue(forRelationship relationship: NSRelationshipDescription,
-                          forObjectWith objectID: NSManagedObjectID,
-                          with context: NSManagedObjectContext?) throws -> Any
-   {
-      return []
    }
 
    func backingObject(for referenceString: String, entity: String) -> NSManagedObject? {
@@ -511,7 +454,7 @@ public class StitchStore: NSIncrementalStore {
       return nil
    }
 
-   fileprivate func outwardManagedObjectID(_ backingID: NSManagedObjectID) -> NSManagedObjectID {
+   internal func outwardManagedObjectID(_ backingID: NSManagedObjectID) -> NSManagedObjectID {
       var recordID : String = ""
       var entityName : String = ""
       self.backingMOC.performAndWait { () -> Void in

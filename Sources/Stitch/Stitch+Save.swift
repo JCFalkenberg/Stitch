@@ -163,20 +163,16 @@ extension StitchStore {
             guard let request = NSFetchRequest<NSManagedObject>.backingObjectRequest(for: sourceObject,
                                                                                      store: self) else { continue }
 
-            guard let result = (try? backingMOC.fetch(request).last) else {
-               caughtError = StitchStoreError.invalidReferenceObject
-               break
-            }
             do {
-               guard let result = try? self.backingMOC.fetch(fetchRequest).last else {
+               guard let result = (try self.backingMOC.fetch(request)).last else {
                   caughtError = StitchStoreError.invalidReferenceObject
                   break
                }
                let keys = Array(sourceObject.entity.attributesByName.keys)
                let sourceObjectValues = sourceObject.dictionaryWithValues(forKeys: keys)
-               backingObject.setValuesForKeys(sourceObjectValues)
+               result.setValuesForKeys(sourceObjectValues)
 
-               createChangeSet(forUpdated: backingObject)
+               createChangeSet(forUpdated: result)
             } catch {
                caughtError = error
                print("Error updating objects in backing store \(error)")
