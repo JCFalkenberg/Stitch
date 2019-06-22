@@ -58,7 +58,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       do {
          try context.save()
       } catch {
-         XCTFail("Database should save ok")
+         XCTFail("Database should save ok \(error)")
       }
       // Check the store for the insertion record
    }

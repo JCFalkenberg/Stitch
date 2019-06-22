@@ -95,6 +95,7 @@ public class StitchStore: NSIncrementalStore {
       case invalidRequest
       case invalidBackingStoreType
       case invalidStoreModelForConfiguration
+      case invalidReferenceObject
       case errorCreatingStoreDirectory(underlyingError: NSError?)
       case backingStoreCreationFailed(underlyingError: NSError?)
    }
@@ -165,6 +166,10 @@ public class StitchStore: NSIncrementalStore {
       opQueue.maxConcurrentOperationCount = 1
       return opQueue
    }()
+
+   @objc open var isSyncing : Bool {
+      return operationQueue.operationCount > 0
+   }
 
    var tokenURL: URL? {
       guard let storeURL = url else { return nil }
@@ -343,6 +348,59 @@ public class StitchStore: NSIncrementalStore {
       #endif
    }
 
+   public class func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
+//      guard let ckNotification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+//      if ckNotification.notificationType == CKNotification.NotificationType.recordZone {
+//         guard let recordZoneNotification = CKRecordZoneNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+//         /// TODO: FIX ME
+//         if recordZoneNotification.recordZoneID?.zoneName == "" {
+//            return true
+//         }
+//      }
+      return false
+   }
+   @objc public func handlePush(userInfo: [AnyHashable: Any]) {
+      if StitchStore.isOurPushNotification(userInfo) {
+         self.triggerSync(.push)
+      }
+   }
+
+   /// triggerSync causes the database to run a sync cycle if an internet connection is available.
+   /// Can be called automatically on save if the SMStore.Options.SyncOnSave flag is set in the options dictionary to true
+   /// Will automatically queue up another sync cycle if a second call is made while a sync is in progress
+   /// If called a third or more time while in the middle of a cycle, the highest priority reason for syncing will be used for the next sync cycle
+   /// - Parameter reason: The reason for the sync, primarily used for logging and debug purposes, it is also used in the instance of SyncTriggerType. localSave to prevent a sync cycle from occuring with no queued changes.
+   public func triggerSync(_ reason: SyncTriggerType) {
+      if isSyncing {
+         if reason.rawValue < nextSyncReason.rawValue {
+            nextSyncReason = reason
+         }
+         syncAgain = true;
+         return
+      }
+      if !(self.connectionStatus?.internetConnectionAvailable ?? false) {
+         return
+      }
+
+      print("Syncing in response to \(reason.printName)")
+
+      /* ASSUMPTION! Bundle.main.bundleIdentifier isn't nil */
+      if let bundleIDs = metadata[Metadata.SetupFromBundleIDs] as? [String],
+         let currentBundleID = Bundle.main.bundleIdentifier,
+         bundleIDs.contains(currentBundleID)
+      {
+         syncStore(reason)
+      } else {
+         setupStore(reason)
+      }
+   }
+
+   fileprivate func syncStore(_ reason: SyncTriggerType) {
+   }
+
+   fileprivate func setupStore(_ reason: SyncTriggerType) {
+   }
+
    override public func execute(_ request: NSPersistentStoreRequest,
                                 with context: NSManagedObjectContext?) throws -> Any
    {
@@ -354,7 +412,7 @@ public class StitchStore: NSIncrementalStore {
          results = try fetch(request, context: context)
       case .saveRequestType:
          guard let request = request as? NSSaveChangesRequest else { throw StitchStoreError.invalidRequest }
-         results = try save(request)
+         results = try save(request, context: context)
       default: //In the future it would be nice to support batchUpdateRequestType and batchDeleteRequestType
          throw StitchStoreError.invalidRequest
       }
@@ -408,8 +466,26 @@ public class StitchStore: NSIncrementalStore {
       return mappedResults
    }
 
-   fileprivate func save(_ request: NSSaveChangesRequest) throws -> [Any] {
+   fileprivate func save(_ request: NSSaveChangesRequest, context: NSManagedObjectContext) throws -> [Any] {
+      let inserted = request.insertedObjects ?? Set<NSManagedObject>()
+      try insertInBacking(inserted, mainContext: context)
+
+      let updated = request.updatedObjects ?? Set<NSManagedObject>()
+      try updateInBacking(updated)
+
+      let deleted = request.deletedObjects ?? Set<NSManagedObject>()
+      try deleteFromBacking(deleted, mainContext: context)
+
+      try _updateReferences(sourceObjects: inserted.union(updated), mainContext: context)
+      try backingMOC.saveInBlockIfHasChanges()
+      if syncOnSave {
+         self.triggerSync(.localSave)
+      }
       return []
+   }
+
+   public override func referenceObject(for objectID: NSManagedObjectID) -> Any {
+      return "\(super.referenceObject(for: objectID))"
    }
 
    override public func newValuesForObject(with objectID: NSManagedObjectID,
@@ -450,5 +526,68 @@ public class StitchStore: NSIncrementalStore {
       let entity = self.persistentStoreCoordinator!.managedObjectModel.entitiesByName[entityName]
       let objectID = self.newObjectID(for: entity!, referenceObject: recordID)
       return objectID
+   }
+
+   fileprivate func objectIDForBackingObjectForEntity(_ entityName: String, withReferenceObject referenceObject: String?) throws -> NSManagedObjectID? {
+      guard let referenceObject = referenceObject else { return nil }
+      let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObjectID>(entityName: entityName)
+      fetchRequest.resultType = NSFetchRequestResultType.managedObjectIDResultType
+      fetchRequest.fetchLimit = 1
+      fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
+      let results = try self.backingMOC.fetch(fetchRequest)
+      return results.last
+   }
+
+   fileprivate func setRelationshipValues(for backingObject:NSManagedObject,
+                                          sourceObject:NSManagedObject) throws
+   {
+   }
+
+   fileprivate func _updateReferences(sourceObjects objects:Set<NSManagedObject>,
+                                      mainContext: NSManagedObjectContext) throws
+   {
+   }
+
+   fileprivate func insertInBacking(_ objects:Set<NSManagedObject>,
+                                    mainContext: NSManagedObjectContext) throws
+   {
+      var caughtError: Error? = nil
+      self.backingMOC.performAndWait({ () -> Void in
+         for sourceObject in objects {
+            let managedObject = NSEntityDescription.insertNewObject(forEntityName: (sourceObject.entity.name)!, into: self.backingMOC)
+            let keys = Array(sourceObject.entity.attributesByName.keys)
+            let dictionary = sourceObject.dictionaryWithValues(forKeys: keys)
+            managedObject.setValuesForKeys(dictionary)
+
+            guard let referenceObject: String = referenceObject(for: sourceObject.objectID) as? String else {
+               caughtError = StitchStoreError.invalidReferenceObject
+               break
+            }
+            managedObject.setValue(referenceObject, forKey: NSEntityDescription.StitchStoreRecordIDAttributeName)
+            do {
+               try backingMOC.obtainPermanentIDs(for: [managedObject])
+
+//               SMStoreChangeSetHandler.createChangeSet(ForInsertedObjectRecordID: referenceObject,
+//                                                       entityName: sourceObject.entity.name!,
+//                                                       backingContext: backingMOC)
+            } catch {
+               caughtError = error
+               print("Error inserting object in backing store \(error)")
+               break
+            }
+         }
+      })
+      if let caughtError = caughtError {
+         throw caughtError
+      }
+   }
+
+   fileprivate func deleteFromBacking(_ objects: Set<NSManagedObject>,
+                                      mainContext: NSManagedObjectContext) throws
+   {
+   }
+
+   fileprivate func updateInBacking(_ objects: Set<NSManagedObject>) throws
+   {
    }
 }

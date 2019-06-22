@@ -12,6 +12,10 @@ extension NSPredicate {
       print("predicate format: \(predicateFormat)")
       return self
    }
+
+   convenience init(backingReferenceID: String) {
+      self.init(format: "%K == %@", NSEntityDescription.StitchStoreRecordIDAttributeName, backingReferenceID)
+   }
 }
 
 extension NSComparisonPredicate {
