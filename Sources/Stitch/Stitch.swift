@@ -365,19 +365,14 @@ public class StitchStore: NSIncrementalStore {
       #endif
    }
 
-   public class func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
-//      guard let ckNotification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
-//      if ckNotification.notificationType == CKNotification.NotificationType.recordZone {
-//         guard let recordZoneNotification = CKRecordZoneNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
-//         /// TODO: FIX ME
-//         if recordZoneNotification.recordZoneID?.zoneName == "" {
-//            return true
-//         }
-//      }
-      return false
+   func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
+      guard let ckNotification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+      if ckNotification.notificationType != CKNotification.NotificationType.recordZone { return false }
+      guard let recordZoneNotification = CKRecordZoneNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+      return recordZoneNotification.recordZoneID?.zoneName == zoneID.zoneName
    }
    @objc public func handlePush(userInfo: [AnyHashable: Any]) {
-      if StitchStore.isOurPushNotification(userInfo) {
+      if isOurPushNotification(userInfo) {
          triggerSync(.push)
       }
    }

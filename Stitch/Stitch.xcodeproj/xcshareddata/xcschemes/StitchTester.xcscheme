@@ -32,16 +32,6 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B9C7571D22BC802C0086163A"
-               BuildableName = "StitchUITests.xctest"
-               BlueprintName = "StitchUITests"
-               ReferencedContainer = "container:Stitch.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "B9D748F122BC8C420058EDB9"
                BuildableName = "StitchTesterTests.xctest"
                BlueprintName = "StitchTesterTests"
