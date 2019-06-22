@@ -67,8 +67,20 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
    }
 
    func testAddObject() {
-      XCTAssertNotNil(addEntryAndSave())
+      let entry = addEntryAndSave()
+      XCTAssertNotNil(entry)
       XCTAssertEqual(store?.changesCount(), 1)
+
+      guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
+         XCTFail("Change sets should not be nil!")
+         return
+      }
+      XCTAssertEqual(changeSets.count, 1)
+      let records = store?.ckRecords(for: changeSets)
+      XCTAssertEqual(records?.count, 1)
+      XCTAssertNotNil(records?.first?.value(forKey: "text"))
+      XCTAssertEqual(records?.first?.value(forKey: "text") as? String, entry?.text)
+      //check that there aren't any deletions listed
    }
 
    func testModifyObject() {
@@ -78,6 +90,16 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
       save()
       XCTAssertEqual(store?.changesCount(), 2)
+      //check that there aren't any deletions listed
+      guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
+         XCTFail("Change sets should not be nil!")
+         return
+      }
+      XCTAssertEqual(changeSets.count, 2)
+      let records = store?.ckRecords(for: changeSets)
+      XCTAssertEqual(records?.count, 1)
+      XCTAssertNotNil(records?.first?.value(forKey: "text"))
+      XCTAssertEqual(records?.first?.value(forKey: "text") as? String, entry?.text)
    }
 
    func testDeleteObject() {

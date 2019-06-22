@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import CloudKit
 
 extension StitchStore {
    func createChangeSet(forInserted recordID: String,
@@ -55,6 +56,37 @@ extension StitchStore {
          result = (try? backingMOC.fetch(request).first?.intValue) ?? 0
       }
       return result
+   }
+
+   func insertedAndUpdatedChangeSets() -> [ChangeSet] {
+      var results: [ChangeSet] = []
+      backingMOC.performAndWait {
+         let request = NSFetchRequest<ChangeSet>(entityName: NSEntityDescription.StitchStoreChangeSetEntityName)
+         request.predicate = NSPredicate(format: "(%K == %@ || %K == %@) && %K == %@",
+                                         NSEntityDescription.StitchStoreChangeTypeAttributeName,
+                                         NSNumber(value: RecordChange.inserted.rawValue),
+                                         NSEntityDescription.StitchStoreChangeTypeAttributeName,
+                                         NSNumber(value: RecordChange.updated.rawValue),
+                                         NSEntityDescription.StitchStoreChangeQueuedAttributeName,
+                                         NSNumber(value: false))
+         results = (try? backingMOC.fetch(request)) ?? []
+      }
+
+      return results
+   }
+
+   func ckRecords(for changeSets: [ChangeSet]) -> [CKRecord] {
+      var ckRecordsDict = [String: CKRecord]()
+
+      for change in changeSets {
+         if let existing = ckRecordsDict[change.recordID] {
+            ckRecordsDict[change.recordID] = change.ckRecord(zone: zoneID, existing: existing)
+         } else {
+            ckRecordsDict[change.recordID] = change.ckRecord(zone: zoneID)
+         }
+      }
+
+      return Array(ckRecordsDict.values)
    }
 }
 

@@ -74,4 +74,19 @@ extension NSEntityDescription {
                                  attributes: attributes,
                                  className: NSStringFromClass(ChangeSet.self))
    }
+
+   var attributesByNameSansBacking: [String: NSAttributeDescription] {
+      return attributesByName.filter {
+         $0.key != NSEntityDescription.StitchStoreRecordIDAttributeName &&
+         $0.key != NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
+      }
+   }
+
+   var toOneRelationships: [NSRelationshipDescription] {
+      return relationshipsByName.values.filter { $0.isToMany == false }
+   }
+
+   var toOneRelationshipsByName: [String:NSRelationshipDescription] {
+      return relationshipsByName.filter { $0.value.isToMany == false }
+   }
 }

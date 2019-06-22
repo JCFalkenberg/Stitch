@@ -139,6 +139,18 @@ public class StitchStore: NSIncrementalStore {
       /// SyncOnSave an NSNumber boolean value for whether to automatically sync when the database is told to save.
       /// Defaults to true.
       public static let SyncOnSave = StitchStoreSyncOnSaveOption
+
+      /// ZoneNameOption: Lets you specify a string to use as the CloudKitZone ID name
+      /// Defaults to SubscriptionInfo.CustomZoneName
+      public static let ZoneNameOption = "CloudKitZoneNameOptionKey"
+      /// SubscriptionNameOption: Lets you specify a string to use as the CloudKit subscription name ID
+      /// Defaults to SubscriptionInfo.SubscriptionName
+      public static let SubscriptionNameOption = "CloudKitSubscriptionNameOptionKey"
+   }
+
+   public struct SubscriptionInfo {
+      public static let CustomZoneName = "SMStoreCloudStore_CustomZone"
+      public static let SubscriptionName = "SM_CloudStore_Subscription"
    }
 
    /// Metadata keys for Stitch Store
@@ -195,6 +207,8 @@ public class StitchStore: NSIncrementalStore {
    var recordConflictResolutionBlock: RecordResolutionBlock? = nil
    var syncOnSave: Bool = true
 
+   var zoneID: CKRecordZone.ID = CKRecordZone.ID(zoneName: SubscriptionInfo.CustomZoneName, ownerName: CKCurrentUserDefaultName)
+
    fileprivate var changedEntitesToMigrate = [String]()
 
    var excludedUnchangingAsyncAssetKeys = [String]()
@@ -239,6 +253,9 @@ public class StitchStore: NSIncrementalStore {
       }
       if let sync = options?[Options.SyncOnSave] as? NSNumber, !sync.boolValue {
          syncOnSave = false
+      }
+      if let zoneName = options?[Options.ZoneNameOption] as? String, !zoneName.isEmpty {
+         zoneID = CKRecordZone.ID(zoneName: zoneName, ownerName: CKCurrentUserDefaultName)
       }
 
       let storeType = options?[Options.BackingStoreType] as? String ?? NSSQLiteStoreType
