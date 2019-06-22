@@ -8,6 +8,14 @@
 import CoreData
 
 extension NSFetchRequest {
+   @objc class func backingObjectRequest(for outwardObject: NSManagedObject, store: NSIncrementalStore) -> NSFetchRequest<NSManagedObject>? {
+      guard let recordID: String = store.referenceObject(for: outwardObject.objectID) as? String else { return nil }
+      let request = NSFetchRequest<NSManagedObject>(entityName: outwardObject.entityName)
+      request.predicate = NSPredicate(backingReferenceID: recordID)
+      request.fetchLimit = 1
+      return request
+   }
+
    @objc func transfer(to store: StitchStore) -> NSFetchRequest<NSFetchRequestResult>? {
       guard let entityName = entityName else { return nil }
       guard let entity = store.backingModel?.entitiesByName[entityName] else { return nil }

@@ -21,20 +21,65 @@ extension StitchStore {
       try updateReferences(sourceObjects: inserted.union(updated))
       try backingMOC.saveInBlockIfHasChanges()
       if syncOnSave {
-         self.triggerSync(.localSave)
+         triggerSync(.localSave)
       }
       return []
+   }
+
+   fileprivate func objectID(for entityName: String,
+                             with referenceObject: String?) -> NSManagedObjectID?
+   {
+      guard let referenceObject = referenceObject else { return nil }
+      let request = NSFetchRequest<NSManagedObjectID>(entityName: entityName)
+      request.resultType = .managedObjectIDResultType
+      request.fetchLimit = 1
+      request.predicate = NSPredicate(backingReferenceID: referenceObject)
+      return try? backingMOC.fetch(request).last
    }
 
    /// _setRelationshipValues: ABSOLUTELY DO NOT CALL THIS EVER except  from updateReferences
    /// - Parameter backingObject: The backing object
    /// - Parameter sourceObject: the source object
-   fileprivate func _setRelationshipValues(for backingObject: NSManagedObject) throws
+   fileprivate func _setRelationshipValues(for backingObject: NSManagedObject, sourceObject: NSManagedObject)
    {
+      for relationship in Array(sourceObject.entity.relationshipsByName.values) as [NSRelationshipDescription] {
+         if relationship.isToMany { continue }
+         guard let relationshipValue = sourceObject[relationship.name] as? NSManagedObject else {
+            backingObject[relationship.name] = nil
+            continue
+         }
+         if relationshipValue.objectID.isTemporaryID {
+            continue
+         }
+         let reference = referenceObject(for: relationshipValue.objectID) as! String
+         guard let backingRelatedID = objectID(for: relationship.destinationEntity!.name!,
+                                               with: reference) else { continue }
+         let backingRelatedObject = backingMOC.object(with: backingRelatedID)
+         backingObject[relationship.name] = backingRelatedObject
+      }
    }
 
    fileprivate func updateReferences(sourceObjects objects:Set<NSManagedObject>) throws
    {
+      if objects.count == 0 { return }
+      var caughtError: Error? = nil
+      for sourceObject in objects {
+         guard let request = NSFetchRequest<NSManagedObject>.backingObjectRequest(for: sourceObject,
+                                                                                  store: self) else { continue }
+
+         backingMOC.performAndWait {
+            do {
+               guard let result = try backingMOC.fetch(request).last else { return }
+               _setRelationshipValues(for: result, sourceObject: sourceObject)
+            } catch {
+               print("Error \(error) updating references")
+               caughtError = error
+            }
+         }
+      }
+      if let caughtError = caughtError {
+         throw caughtError
+      }
    }
 
    fileprivate func insertInBacking(_ objects:Set<NSManagedObject>) throws
@@ -44,7 +89,7 @@ extension StitchStore {
       backingMOC.performAndWait({ () -> Void in
          for sourceObject in objects {
             let managedObject = NSEntityDescription.insertNewObject(forEntityName: (sourceObject.entity.name)!,
-                                                                    into: self.backingMOC)
+                                                                    into: backingMOC)
             let keys = Array(sourceObject.entity.attributesByName.keys)
             let dictionary = sourceObject.dictionaryWithValues(forKeys: keys)
             managedObject.setValuesForKeys(dictionary)
@@ -53,12 +98,12 @@ extension StitchStore {
                caughtError = StitchStoreError.invalidReferenceObject
                break
             }
-            managedObject.setValue(referenceObject, forKey: NSEntityDescription.StitchStoreRecordIDAttributeName)
+            managedObject[NSEntityDescription.StitchStoreRecordIDAttributeName] = referenceObject
             do {
                try backingMOC.obtainPermanentIDs(for: [managedObject])
 
                createChangeSet(forInserted: referenceObject,
-                               entityName: sourceObject.entity.name!)
+                               entityName: sourceObject.entityName)
             } catch {
                caughtError = error
                print("Error inserting object in backing store \(error)")
@@ -77,19 +122,14 @@ extension StitchStore {
       var caughtError: Error? = nil
       backingMOC.performAndWait { () -> Void in
          for sourceObject in objects {
-            guard let referenceObject: String = referenceObject(for: sourceObject.objectID) as? String else {
-               caughtError = StitchStoreError.invalidReferenceObject
-               break
-            }
-            let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: sourceObject.entity.name!)
-            fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
-            fetchRequest.fetchLimit = 1
+            guard let referenceObject = referenceObject(for: sourceObject.objectID) as? String else { continue }
+            guard let request = NSFetchRequest<NSManagedObject>.backingObjectRequest(for: sourceObject,
+                                                                                     store: self) else { continue }
 
             do {
-               let results = try self.backingMOC.fetch(fetchRequest)
-               guard let backingObject = results.last else { continue }
+               guard let result = try backingMOC.fetch(request).last else { continue }
                createChangeSet(forDeleted: referenceObject)
-               backingMOC.delete(backingObject)
+               backingMOC.delete(result)
             } catch {
                caughtError = error
                print("Error updating objects in backing store \(error)")
@@ -116,21 +156,19 @@ extension StitchStore {
             if toManyKeys.count > 0 &&
                Set(modifiedKeys).intersection(Set(toManyKeys)) == Set(modifiedKeys)
             {
-               //               print("only modified too many relationships, skipping")
+//               print("only modified too many relationships, skipping")
                continue
             }
 
-            guard let referenceObject: String = referenceObject(for: sourceObject.objectID) as? String else {
+            guard let request = NSFetchRequest<NSManagedObject>.backingObjectRequest(for: sourceObject,
+                                                                                     store: self) else { continue }
+
+            guard let result = (try? backingMOC.fetch(request).last) else {
                caughtError = StitchStoreError.invalidReferenceObject
                break
             }
-            let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: sourceObject.entity.name!)
-            fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
-            fetchRequest.fetchLimit = 1
-
             do {
-               let results = try self.backingMOC.fetch(fetchRequest)
-               guard let backingObject = results.last else {
+               guard let result = try? self.backingMOC.fetch(fetchRequest).last else {
                   caughtError = StitchStoreError.invalidReferenceObject
                   break
                }

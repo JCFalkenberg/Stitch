@@ -10,7 +10,16 @@ import CloudKit
 
 extension NSManagedObject {
    subscript(key: String) -> Any? {
-      return self.value(forKey: key)
+      get {
+         return self.value(forKey: key)
+      }
+      set(newValue) {
+         self.setValue(newValue, forKey: key)
+      }
+   }
+
+   var entityName: String {
+      return entity.name!
    }
 
    func ckRecordID(zone: CKRecordZone.ID) -> CKRecord.ID? {
