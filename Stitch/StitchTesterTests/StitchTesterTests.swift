@@ -68,7 +68,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
    func testAddObject() {
       XCTAssertNotNil(addEntryAndSave())
-      // Test whether the backing store has the appropriate entry in it for an add
+      XCTAssertEqual(store?.changesCount(), 1)
    }
 
    func testModifyObject() {
@@ -77,7 +77,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       entry?.text = "be trans do crimes fk cops"
 
       save()
-      // Test whether the backing store has the appropriate entry in it for a change
+      XCTAssertEqual(store?.changesCount(), 2)
    }
 
    func testDeleteObject() {
@@ -89,6 +89,6 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       context?.delete(entry)
 
       save()
-      // Test whether the backing store has the appropriate entry in it for a delete
+      XCTAssertEqual(store?.changesCount(), 2)
    }
 }

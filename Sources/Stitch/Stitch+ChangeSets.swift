@@ -46,5 +46,15 @@ extension StitchStore {
                         recordID: recordID,
                         changeType: .deleted)
    }
+
+   func changesCount() -> Int {
+      var result = 0
+      backingMOC.performAndWait {
+         let request = NSFetchRequest<NSNumber>(entityName: NSEntityDescription.StitchStoreChangeSetEntityName)
+         request.resultType = .countResultType
+         result = (try? backingMOC.fetch(request).first?.intValue) ?? 0
+      }
+      return result
+   }
 }
 
