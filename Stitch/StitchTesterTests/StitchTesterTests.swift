@@ -81,6 +81,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertNotNil(records?.first?.value(forKey: "text"))
       XCTAssertEqual(records?.first?.value(forKey: "text") as? String, entry?.text)
       //check that there aren't any deletions listed
+      XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
    }
 
    func testModifyObject() {
@@ -100,6 +101,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(records?.count, 1)
       XCTAssertNotNil(records?.first?.value(forKey: "text"))
       XCTAssertEqual(records?.first?.value(forKey: "text") as? String, entry?.text)
+      XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
    }
 
    func testDeleteObject() {
@@ -112,5 +114,6 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
       save()
       XCTAssertEqual(store?.changesCount(), 2)
+      XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 1)
    }
 }

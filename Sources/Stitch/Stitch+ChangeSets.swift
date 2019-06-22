@@ -88,5 +88,23 @@ extension StitchStore {
 
       return Array(ckRecordsDict.values)
    }
+
+   func deletedCKRecordIDs() -> [CKRecord.ID]? {
+      var recordIDs = [CKRecord.ID]()
+      backingMOC.performAndWait {
+         let request = NSFetchRequest<ChangeSet>(entityName: NSEntityDescription.StitchStoreChangeSetEntityName)
+         request.predicate = NSPredicate(format: "%K == %@ && %K == %@",
+                                         NSEntityDescription.StitchStoreChangeTypeAttributeName,
+                                         NSNumber(value: RecordChange.deleted.rawValue),
+                                         NSEntityDescription.StitchStoreChangeQueuedAttributeName,
+                                         NSNumber(value: false))
+         let results = (try? backingMOC.fetch(request)) ?? []
+         for result in results {
+            let ckRecordID = CKRecord.ID(recordName: result.recordID, zoneID: zoneID)
+            recordIDs.append(ckRecordID)
+         }
+      }
+      return recordIDs
+   }
 }
 
