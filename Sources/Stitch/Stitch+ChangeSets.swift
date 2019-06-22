@@ -18,20 +18,33 @@ extension StitchStore {
    }
 
    func createChangeSet(forUpdated object: NSManagedObject) {
-//      let changeSet = NSEntityDescription.insertNewObject(forEntityName: SMLocalStoreChangeSetEntityName, into: context)
-//      let changedPropertyKeys = SMStoreChangeSetHandler.changedPropertyKeys(Array(object.changedValues().keys), entity: object.entity) + Array(object.entity.toOneRelationshipsByName().keys)
-//      let recordIDString: String = object.value(forKey: SMLocalStoreRecordIDAttributeName) as! String
-//      let changedPropertyKeysString = changedPropertyKeys.joined(separator: ",")
-//      changeSet.setValue(recordIDString, forKey: SMLocalStoreRecordIDAttributeName)
-//      changeSet.setValue(object.entity.name!, forKey: SMLocalStoreEntityNameAttributeName)
-//      changeSet.setValue(changedPropertyKeysString, forKey: SMLocalStoreRecordChangedPropertiesAttributeName)
-//      changeSet.setValue(NSNumber(value: SMLocalStoreRecordChangeType.recordUpdated.rawValue as Int16), forKey: SMLocalStoreChangeTypeAttributeName)
+      let changedKeys = changedPropertyKeys(Array(object.changedValues().keys), entity: object.entity)
+      let changedKeysString = changedKeys.joined(separator: ",")
+      let recordIDString: String = object.value(forKey: NSEntityDescription.StitchStoreRecordIDAttributeName) as! String
+
+      let _ = ChangeSet(context: backingMOC,
+                        entityName: object.entity.name!,
+                        recordID: recordIDString,
+                        changedProperties: changedKeysString,
+                        changeType: .updated)
+   }
+
+
+   func changedPropertyKeys(_ keys: [String], entity: NSEntityDescription) -> [String] {
+      return keys.filter({ (key) -> Bool in
+         let property = entity.propertiesByName[key]
+         if let relationshipDescription = property as? NSRelationshipDescription {
+            return relationshipDescription.isToMany == false
+         }
+         return true
+      })
    }
 
    func createChangeSet(forDeleted recordID:String) {
-//      let changeSet = NSEntityDescription.insertNewObject(forEntityName: SMLocalStoreChangeSetEntityName, into: backingContext)
-//      changeSet.setValue(recordID, forKey: SMLocalStoreRecordIDAttributeName)
-//      changeSet.setValue(NSNumber(value: SMLocalStoreRecordChangeType.recordDeleted.rawValue as Int16), forKey: SMLocalStoreChangeTypeAttributeName)
+      let _ = ChangeSet(context: backingMOC,
+                        entityName: nil,
+                        recordID: recordID,
+                        changeType: .deleted)
    }
 }
 

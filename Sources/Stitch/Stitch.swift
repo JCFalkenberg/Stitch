@@ -522,13 +522,17 @@ public class StitchStore: NSIncrementalStore {
       }
       return outwardManagedObjectIDForRecordEntity(recordID, entityName: entityName)
    }
-   fileprivate func outwardManagedObjectIDForRecordEntity(_ recordID: String, entityName: String) -> NSManagedObjectID {
+   fileprivate func outwardManagedObjectIDForRecordEntity(_ recordID: String,
+                                                          entityName: String) -> NSManagedObjectID
+   {
       let entity = self.persistentStoreCoordinator!.managedObjectModel.entitiesByName[entityName]
       let objectID = self.newObjectID(for: entity!, referenceObject: recordID)
       return objectID
    }
 
-   fileprivate func objectIDForBackingObjectForEntity(_ entityName: String, withReferenceObject referenceObject: String?) throws -> NSManagedObjectID? {
+   fileprivate func objectIDForBackingObjectForEntity(_ entityName: String,
+                                                      withReferenceObject referenceObject: String?) throws -> NSManagedObjectID?
+   {
       guard let referenceObject = referenceObject else { return nil }
       let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObjectID>(entityName: entityName)
       fetchRequest.resultType = NSFetchRequestResultType.managedObjectIDResultType
@@ -551,8 +555,9 @@ public class StitchStore: NSIncrementalStore {
    fileprivate func insertInBacking(_ objects:Set<NSManagedObject>,
                                     mainContext: NSManagedObjectContext) throws
    {
+      if objects.count == 0 { return }
       var caughtError: Error? = nil
-      self.backingMOC.performAndWait({ () -> Void in
+      backingMOC.performAndWait({ () -> Void in
          for sourceObject in objects {
             let managedObject = NSEntityDescription.insertNewObject(forEntityName: (sourceObject.entity.name)!,
                                                                     into: self.backingMOC)
@@ -589,5 +594,50 @@ public class StitchStore: NSIncrementalStore {
 
    fileprivate func updateInBacking(_ objects: Set<NSManagedObject>) throws
    {
+      if objects.count == 0 { return }
+      var caughtError: Error? = nil
+      backingMOC.performAndWait { () -> Void in
+         for sourceObject in objects {
+            if !sourceObject.hasPersistentChangedValues {
+               continue
+            }
+            let modifiedKeys = sourceObject.changedValues().keys
+            let toManyKeys = sourceObject.entity.relationshipsByName.compactMap { $0.value.isToMany ? $0.key : nil }
+            if toManyKeys.count > 0 &&
+               Set(modifiedKeys).intersection(Set(toManyKeys)) == Set(modifiedKeys)
+            {
+//               print("only modified too many relationships, skipping")
+               continue
+            }
+
+            guard let referenceObject: String = referenceObject(for: sourceObject.objectID) as? String else {
+               caughtError = StitchStoreError.invalidReferenceObject
+               break
+            }
+            let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: sourceObject.entity.name!)
+            fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
+            fetchRequest.fetchLimit = 1
+
+            do {
+               let results = try self.backingMOC.fetch(fetchRequest)
+               guard let backingObject = results.last else {
+                  caughtError = StitchStoreError.invalidReferenceObject
+                  break
+               }
+               let keys = Array(sourceObject.entity.attributesByName.keys)
+               let sourceObjectValues = sourceObject.dictionaryWithValues(forKeys: keys)
+               backingObject.setValuesForKeys(sourceObjectValues)
+
+               createChangeSet(forUpdated: backingObject)
+            } catch {
+               caughtError = error
+               print("Error updating objects in backing store \(error)")
+               break
+            }
+         }
+      }
+      if let caughtError = caughtError {
+         throw caughtError
+      }
    }
 }

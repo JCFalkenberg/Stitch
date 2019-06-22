@@ -46,20 +46,37 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       coordinator = nil
    }
 
-   func testAddObject() {
+   func addEntryAndSave() -> Entry? {
       guard let context = context else {
          XCTFail("Context should not be nil")
-         return
+         return nil
       }
 
       let entry = Entry(entity: Entry.entity(), insertInto: context)
       entry.text = "be gay do crimes fk cops"
-      XCTAssertNotNil(entry)
+
+      save()
+      return entry
+   }
+   func save() {
       do {
-         try context.save()
+         try context?.save()
       } catch {
          XCTFail("Database should save ok \(error)")
       }
-      // Check the store for the insertion record
+   }
+
+   func testAddObject() {
+      XCTAssertNotNil(addEntryAndSave())
+      // Test whether the backing store has the appropriate entry in it for a change
+   }
+
+   func testModifyObject() {
+      let entry = addEntryAndSave()
+
+      entry?.text = "be trans do crimes fk cops"
+
+      save()
+      // Test whether the backing store has the appropriate entry in it for a change
    }
 }
