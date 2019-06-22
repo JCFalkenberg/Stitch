@@ -78,9 +78,9 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(changeSets.count, 1)
       let records = store?.ckRecords(for: changeSets)
       XCTAssertEqual(records?.count, 1)
-      XCTAssertNotNil(records?.first?.value(forKey: "text"))
-      XCTAssertEqual(records?.first?.value(forKey: "text") as? String, entry?.text)
-      //check that there aren't any deletions listed
+      let text = records?.first?.value(forKey: "text") as? String
+      XCTAssertNotNil(text)
+      XCTAssertEqual(text, entry?.text)
       XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
    }
 
@@ -91,7 +91,6 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
       save()
       XCTAssertEqual(store?.changesCount(), 2)
-      //check that there aren't any deletions listed
       guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
          XCTFail("Change sets should not be nil!")
          return
@@ -99,8 +98,9 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(changeSets.count, 2)
       let records = store?.ckRecords(for: changeSets)
       XCTAssertEqual(records?.count, 1)
-      XCTAssertNotNil(records?.first?.value(forKey: "text"))
-      XCTAssertEqual(records?.first?.value(forKey: "text") as? String, entry?.text)
+      let text = records?.first?.value(forKey: "text") as? String
+      XCTAssertNotNil(text)
+      XCTAssertEqual(text, entry?.text)
       XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
    }
 

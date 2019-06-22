@@ -21,7 +21,7 @@ extension StitchStore {
    func createChangeSet(forUpdated object: NSManagedObject) {
       let changedKeys = changedPropertyKeys(Array(object.changedValues().keys), entity: object.entity)
       let changedKeysString = changedKeys.joined(separator: ",")
-      let recordIDString: String = object.value(forKey: NSEntityDescription.StitchStoreRecordIDAttributeName) as! String
+      let recordIDString = object[NSEntityDescription.StitchStoreRecordIDAttributeName] as! String
 
       let _ = ChangeSet(context: backingMOC,
                         entityName: object.entity.name!,

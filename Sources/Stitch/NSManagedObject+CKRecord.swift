@@ -23,7 +23,7 @@ extension NSManagedObject {
    }
 
    func ckRecordID(zone: CKRecordZone.ID) -> CKRecord.ID? {
-      guard let recordIDString: String = self[NSEntityDescription.StitchStoreRecordIDAttributeName] as? String else { return nil }
+      guard let recordIDString = self[NSEntityDescription.StitchStoreRecordIDAttributeName] as? String else { return nil }
       return CKRecord.ID(recordName: recordIDString, zoneID: zone)
    }
 
@@ -33,7 +33,7 @@ extension NSManagedObject {
 
       for key in attributeKeys {
          guard let attribute = entity.attributesByName[key], !attribute.isTransient else { continue }
-         guard let value = value(forKey: key) else {
+         guard let value = self[key] else {
             record.setValue(nil, forKey: key)
             continue
          }

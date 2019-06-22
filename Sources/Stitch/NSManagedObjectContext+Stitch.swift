@@ -16,7 +16,7 @@ extension NSManagedObjectContext {
 
    func saveInBlockIfHasChanges() throws {
       var caughtError: Error? = nil
-      self.performAndWait { () -> Void in
+      self.performAndWait {
          do {
             try self.saveIfHasChanges()
          } catch {

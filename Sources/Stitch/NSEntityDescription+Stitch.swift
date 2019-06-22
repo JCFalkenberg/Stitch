@@ -8,7 +8,12 @@
 import CoreData
 
 extension NSAttributeDescription {
-   convenience init(_ name: String, optional: Bool, indexed: Bool = false, defaultValue: Any? = nil, type: NSAttributeType) {
+   convenience init(_ name: String,
+                    optional: Bool,
+                    indexed: Bool = false,
+                    defaultValue: Any? = nil,
+                    type: NSAttributeType)
+   {
       self.init()
       self.name = name
       isOptional = optional
@@ -28,7 +33,10 @@ extension NSEntityDescription {
    static let StitchStoreRecordIDAttributeName                = "sm_LocalStore_RecordID"
    static let StitchStoreRecordEncodedValuesAttributeName     = "sm_LocalStore_EncodedValues"
 
-   convenience init(_ name: String, attributes: [NSAttributeDescription], className: String = NSStringFromClass(NSManagedObject.self)) {
+   convenience init(_ name: String,
+                    attributes: [NSAttributeDescription],
+                    className: String = NSStringFromClass(NSManagedObject.self))
+   {
       self.init()
       self.name = name
       self.properties.append(contentsOf: attributes)

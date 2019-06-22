@@ -15,7 +15,7 @@ extension StitchStore
       guard let request = fetchRequest.transfer(to: self) else { throw StitchStoreError.invalidRequest }
 
       var mappedResults = [AnyObject]()
-      self.backingMOC.performAndWait { () -> Void in
+      self.backingMOC.performAndWait {
          do {
             let resultsFromLocalStore = try self.backingMOC.fetch(request)
             if resultsFromLocalStore.count > 0 {
@@ -117,6 +117,39 @@ extension StitchStore
                                  forObjectWith objectID: NSManagedObjectID,
                                  with context: NSManagedObjectContext?) throws -> Any
    {
-      return []
+      guard let recordID = referenceObject(for: objectID) as? String else { throw StitchStoreError.invalidReferenceObject }
+
+      let request = NSFetchRequest<NSManagedObject>(entityName: objectID.entity.name!)
+      request.predicate = NSPredicate(backingReferenceID: recordID)
+      request.fetchLimit = 1
+      var object: NSManagedObject? = nil
+      var caughtError: Error? = nil
+      backingMOC.performAndWait {
+         do {
+            object = try self.backingMOC.fetch(request).last
+         } catch {
+            caughtError = error
+            print("error retrieving object in new value for relationship \(error)")
+         }
+      }
+      if let caughtError = caughtError {
+         throw caughtError
+      }
+      guard let backingObject = object else {
+         throw StitchStoreError.backingStoreFetchRequestError
+      }
+
+      if relationship.isToMany {
+         guard let relatedValues: Set<NSManagedObject> = backingObject[relationship.name] as? Set<NSManagedObject> else {
+            throw StitchStoreError.backingStoreFetchRequestError
+         }
+         return Array(relatedValues.map { outwardManagedObjectID($0.objectID) }) as AnyObject
+      } else {
+         if let objectID = (backingObject[relationship.name] as? NSManagedObject)?.objectID {
+            return outwardManagedObjectID(objectID)
+         } else {
+            throw StitchStoreError.backingStoreFetchRequestError
+         }
+      }
    }
 }

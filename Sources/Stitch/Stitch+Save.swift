@@ -86,7 +86,7 @@ extension StitchStore {
    {
       if objects.count == 0 { return }
       var caughtError: Error? = nil
-      backingMOC.performAndWait({ () -> Void in
+      backingMOC.performAndWait {
          for sourceObject in objects {
             let managedObject = NSEntityDescription.insertNewObject(forEntityName: (sourceObject.entity.name)!,
                                                                     into: backingMOC)
@@ -94,7 +94,7 @@ extension StitchStore {
             let dictionary = sourceObject.dictionaryWithValues(forKeys: keys)
             managedObject.setValuesForKeys(dictionary)
 
-            guard let referenceObject: String = referenceObject(for: sourceObject.objectID) as? String else {
+            guard let referenceObject = referenceObject(for: sourceObject.objectID) as? String else {
                caughtError = StitchStoreError.invalidReferenceObject
                break
             }
@@ -110,7 +110,7 @@ extension StitchStore {
                break
             }
          }
-      })
+      }
       if let caughtError = caughtError {
          throw caughtError
       }
@@ -120,7 +120,7 @@ extension StitchStore {
    {
       if objects.count == 0 { return }
       var caughtError: Error? = nil
-      backingMOC.performAndWait { () -> Void in
+      backingMOC.performAndWait {
          for sourceObject in objects {
             guard let referenceObject = referenceObject(for: sourceObject.objectID) as? String else { continue }
             guard let request = NSFetchRequest<NSManagedObject>.backingObjectRequest(for: sourceObject,
@@ -146,7 +146,7 @@ extension StitchStore {
    {
       if objects.count == 0 { return }
       var caughtError: Error? = nil
-      backingMOC.performAndWait { () -> Void in
+      backingMOC.performAndWait {
          for sourceObject in objects {
             if !sourceObject.hasPersistentChangedValues {
                continue

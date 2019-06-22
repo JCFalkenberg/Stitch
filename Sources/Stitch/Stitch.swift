@@ -190,7 +190,7 @@ public class StitchStore: NSIncrementalStore {
 
    lazy var backingMOC: NSManagedObjectContext = {
       var moc = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-      moc.persistentStoreCoordinator = self.backingPersistentStoreCoordinator
+      moc.persistentStoreCoordinator = backingPersistentStoreCoordinator
       moc.retainsRegisteredObjects = true
       moc.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy
       return moc
@@ -296,12 +296,12 @@ public class StitchStore: NSIncrementalStore {
       if !backingModel.validateStitchStoreModel(for: configurationName) {
          throw StitchStoreError.invalidStoreModelForConfiguration
       }
-      self.backingPersistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: backingModel)
+      backingPersistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: backingModel)
 
-      var storeURL: URL? = self.url
-      let tokenURL = self.tokenURL
+      var storeURL: URL? = url
+
       if storeType != NSInMemoryStoreType {
-         guard let baseURL = self.url else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
+         guard let baseURL = url else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
 
          storeURL = baseURL.appendingPathComponent(baseURL.lastPathComponent)
          do {
@@ -315,10 +315,10 @@ public class StitchStore: NSIncrementalStore {
       }
 
       do {
-         self.backingPersistentStore = try self.backingPersistentStoreCoordinator?.addPersistentStore(ofType: storeType,
-                                                                                                      configurationName: configurationName,
-                                                                                                      at: storeURL,
-                                                                                                      options: options)
+         backingPersistentStore = try backingPersistentStoreCoordinator?.addPersistentStore(ofType: storeType,
+                                                                                            configurationName: configurationName,
+                                                                                            at: storeURL,
+                                                                                            options: options)
 
          if let tokenURL = tokenURL,
             let diskMetadata = NSDictionary(contentsOf: tokenURL) as? [String : AnyObject]
@@ -338,9 +338,9 @@ public class StitchStore: NSIncrementalStore {
                changedEntitesToMigrate = changed
             }
          }
-         self.setMetadata(changedEntitesToMigrate.count > 0 ? changedEntitesToMigrate : nil, key: Metadata.ChangedEntitiesToMigrate)
+         setMetadata(changedEntitesToMigrate.count > 0 ? changedEntitesToMigrate : nil, key: Metadata.ChangedEntitiesToMigrate)
 
-         self.identifier = metadata[NSStoreUUIDKey] as? String
+         identifier = metadata[NSStoreUUIDKey] as? String
       } catch {
          let nserror = error as NSError
          throw StitchStoreError.backingStoreCreationFailed(underlyingError: nserror)
@@ -378,7 +378,7 @@ public class StitchStore: NSIncrementalStore {
    }
    @objc public func handlePush(userInfo: [AnyHashable: Any]) {
       if StitchStore.isOurPushNotification(userInfo) {
-         self.triggerSync(.push)
+         triggerSync(.push)
       }
    }
 
@@ -395,7 +395,7 @@ public class StitchStore: NSIncrementalStore {
          syncAgain = true;
          return
       }
-      if !(self.connectionStatus?.internetConnectionAvailable ?? false) {
+      if !(connectionStatus?.internetConnectionAvailable ?? false) {
          return
       }
 
@@ -446,7 +446,7 @@ public class StitchStore: NSIncrementalStore {
          let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity)
          fetchRequest.predicate = NSPredicate(format: "%K == %@", NSEntityDescription.StitchStoreRecordIDAttributeName, referenceString)
          fetchRequest.fetchLimit = 1
-         let results = try self.backingMOC.fetch(fetchRequest)
+         let results = try backingMOC.fetch(fetchRequest)
          return results.last
       } catch {
          print("Error retrieving objects in backing store")
@@ -455,20 +455,20 @@ public class StitchStore: NSIncrementalStore {
    }
 
    internal func outwardManagedObjectID(_ backingID: NSManagedObjectID) -> NSManagedObjectID {
-      var recordID : String = ""
-      var entityName : String = ""
-      self.backingMOC.performAndWait { () -> Void in
-         let value = self.backingMOC.object(with: backingID)
-         recordID = value.value(forKey: NSEntityDescription.StitchStoreRecordIDAttributeName) as! String
-         entityName = value.entity.name!
+      var recordID = ""
+      var entityName = ""
+      backingMOC.performAndWait {
+         let value = backingMOC.object(with: backingID)
+         recordID = value[NSEntityDescription.StitchStoreRecordIDAttributeName] as! String
+         entityName = value.entityName
       }
       return outwardManagedObjectIDForRecordEntity(recordID, entityName: entityName)
    }
    fileprivate func outwardManagedObjectIDForRecordEntity(_ recordID: String,
                                                           entityName: String) -> NSManagedObjectID
    {
-      let entity = self.persistentStoreCoordinator!.managedObjectModel.entitiesByName[entityName]
-      let objectID = self.newObjectID(for: entity!, referenceObject: recordID)
+      let entity = persistentStoreCoordinator!.managedObjectModel.entitiesByName[entityName]
+      let objectID = newObjectID(for: entity!, referenceObject: recordID)
       return objectID
    }
 
@@ -480,7 +480,7 @@ public class StitchStore: NSIncrementalStore {
       fetchRequest.resultType = NSFetchRequestResultType.managedObjectIDResultType
       fetchRequest.fetchLimit = 1
       fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
-      let results = try self.backingMOC.fetch(fetchRequest)
+      let results = try backingMOC.fetch(fetchRequest)
       return results.last
    }
 }
