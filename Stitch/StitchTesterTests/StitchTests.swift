@@ -69,13 +69,15 @@ final class StitchTests: XCTestCase {
                                  type: .stringAttributeType)]
       )
       backingAttributesModel.entities.append(entity)
-      return backingAttributesModel.validateStitchStoreModel()
+      backingAttributesModel.setEntities([entity], forConfigurationName: "Default")
+      return backingAttributesModel.validateStitchStoreModel(for: "Default")
    }
    func validateEntity(named: String) -> Bool {
       let entityModel = NSManagedObjectModel()
       let entity = NSEntityDescription(named, attributes: [])
       entityModel.entities.append(entity)
-      return entityModel.validateStitchStoreModel()
+      entityModel.setEntities([entity], forConfigurationName: "Default")
+      return entityModel.validateStitchStoreModel(for: "Default")
    }
 
    func testModelValidator() {
