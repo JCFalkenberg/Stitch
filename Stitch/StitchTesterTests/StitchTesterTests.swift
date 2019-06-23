@@ -62,6 +62,22 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       save()
       return entry
    }
+   func addLocationAndSave() -> Location? {
+      guard let context = context else {
+         XCTFail("Context should not be nil")
+         return nil
+      }
+      guard let entity = model.entitiesByName["Location"] else {
+         XCTFail("No entity!")
+         return nil
+      }
+
+      let location = Location(entity: entity, insertInto: context)
+      location.displayName = "Home"
+
+      save()
+      return location
+   }
    func save() {
       do {
          try context?.save()
@@ -88,6 +104,20 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
    }
 
+   func testAddRelationship() {
+      let entry = addEntryAndSave()
+      let location = addLocationAndSave()
+
+      entry?.location = location
+      save()
+
+      guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
+         XCTFail("Change sets should not be nil!")
+         return
+      }
+      XCTAssertEqual(changeSets.count, 3) //creation entry, creation location, add relationship to location
+   }
+
    func testFetch() {
       let _ = addEntryAndSave()
 
@@ -99,6 +129,27 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
          }
          XCTAssertEqual(results.count, 1)
          XCTAssertEqual(results.first?.text, "be gay do crimes fk cops")
+      } catch {
+         XCTFail("Error fetching results \(error)")
+      }
+   }
+
+   func testFetchRelationship() {
+      let entry = addEntryAndSave()
+      let location = addLocationAndSave()
+
+      entry?.location = location
+      save()
+
+      let request = NSFetchRequest<Entry>(entityName: "Entry")
+      do {
+         guard let results = try context?.fetch(request) else {
+            XCTFail("nil results from fetch")
+            return
+         }
+         XCTAssertEqual(results.count, 1)
+         XCTAssertNotNil(results.first?.location)
+         XCTAssertEqual(results.first?.location?.displayName, "Home")
       } catch {
          XCTFail("Error fetching results \(error)")
       }

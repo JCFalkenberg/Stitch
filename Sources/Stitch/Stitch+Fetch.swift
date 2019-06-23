@@ -148,7 +148,7 @@ extension StitchStore
          if let objectID = (backingObject[relationship.name] as? NSManagedObject)?.objectID {
             return outwardManagedObjectID(objectID)
          } else {
-            throw StitchStoreError.backingStoreFetchRequestError
+            return NSNull()
          }
       }
    }

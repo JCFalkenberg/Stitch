@@ -14,6 +14,7 @@
         <relationship name="tags" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Tag" inverseName="entryLinks" inverseEntity="Tag"/>
     </entity>
     <entity name="Location" representedClassName="Location" syncable="YES" codeGenerationType="class">
+        <attribute name="displayName" optional="YES" attributeType="String"/>
         <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Entry" inverseName="location" inverseEntity="Entry"/>
     </entity>
     <entity name="Recipe" representedClassName="Recipe" syncable="YES" codeGenerationType="class">
@@ -43,9 +44,9 @@
         <element name="Book" positionX="258.9453125" positionY="216.90625" width="128" height="73"/>
         <element name="Entry" positionX="-63" positionY="-18" width="128" height="88"/>
         <element name="EntryTagLink" positionX="144" positionY="18" width="128" height="73"/>
+        <element name="Location" positionX="-60.109375" positionY="129.703125" width="128" height="73"/>
         <element name="Recipe" positionX="-9.796875" positionY="263.73046875" width="128" height="88"/>
-        <element name="Tag" positionX="341.5546875" positionY="-17.8515625" width="128" height="73"/>
-        <element name="Location" positionX="-60.109375" positionY="129.703125" width="128" height="58"/>
         <element name="Step" positionX="-9.203125" positionY="396.453125" width="128" height="58"/>
+        <element name="Tag" positionX="341.5546875" positionY="-17.8515625" width="128" height="73"/>
     </elements>
 </model>
