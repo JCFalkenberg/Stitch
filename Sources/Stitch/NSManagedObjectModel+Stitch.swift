@@ -29,7 +29,7 @@ extension NSManagedObjectModel {
       }
       for entity in entities(forConfigurationName: configuration) ?? [] {
          if entity.name == NSEntityDescription.StitchStoreChangeSetEntityName {
-            print("\(NSEntityDescription.StitchStoreChangeSetEntityName) is a reserved name")
+            print("\(NSEntityDescription.StitchStoreChangeSetEntityName) is a reserved entity name")
             result = false
          }
          // Add tests for this!
@@ -37,7 +37,7 @@ extension NSManagedObjectModel {
             if attributeName == NSEntityDescription.StitchStoreRecordIDAttributeName ||
                attributeName == NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
             {
-               print("\(attributeName) is a reserved ID key")
+               print("\(attributeName) is a reserved attribute key")
                result = false
             }
          }
