@@ -88,6 +88,22 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
    }
 
+   func testFetch() {
+      let _ = addEntryAndSave()
+
+      let request = NSFetchRequest<Entry>(entityName: "Entry")
+      do {
+         guard let results = try context?.fetch(request) else {
+            XCTFail("nil results from fetch")
+            return
+         }
+         XCTAssertEqual(results.count, 1)
+         XCTAssertEqual(results.first?.text, "be gay do crimes fk cops")
+      } catch {
+         XCTFail("Error fetching results \(error)")
+      }
+   }
+
    func testModifyObject() {
       let entry = addEntryAndSave()
 

@@ -26,7 +26,7 @@ extension NSFetchRequest {
       request.fetchLimit = fetchLimit
       request.fetchBatchSize = fetchBatchSize
       request.fetchOffset = fetchOffset
-      request.affectedStores = [store]
+      request.affectedStores = [store.backingPersistentStore!]
       request.includesSubentities = includesSubentities
       request.includesPendingChanges = includesPendingChanges
       request.includesPropertyValues = includesPropertyValues
