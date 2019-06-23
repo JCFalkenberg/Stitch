@@ -148,6 +148,17 @@ public class StitchStore: NSIncrementalStore {
       public static let SubscriptionNameOption = "CloudKitSubscriptionNameOptionKey"
    }
 
+   public struct BackingModelNames {
+      static let EntityNameAttribute        = "sm_LocalStore_EntityName"
+      static let ChangeTypeAttribute        = "sm_LocalStore_ChangeType"
+      static let ChangedPropertiesAttribute = "sm_LocalStore_ChangedProperties"
+      static let ChangeQueuedAttribute      = "sm_LocalStore_Queued"
+      static let ChangeSetEntity            = "SM_LocalStore_ChangeSetEntity"
+
+      static let RecordIDAttribute          = "sm_LocalStore_RecordID"
+      static let RecordEncodedAttribute     = "sm_LocalStore_EncodedValues"
+   }
+
    public struct SubscriptionInfo {
       public static let CustomZoneName = "SMStoreCloudStore_CustomZone"
       public static let SubscriptionName = "SM_CloudStore_Subscription"
@@ -444,7 +455,7 @@ public class StitchStore: NSIncrementalStore {
    func backingObject(for referenceString: String, entity: String) -> NSManagedObject? {
       do {
          let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity)
-         fetchRequest.predicate = NSPredicate(format: "%K == %@", NSEntityDescription.StitchStoreRecordIDAttributeName, referenceString)
+         fetchRequest.predicate = NSPredicate(format: "%K == %@", StitchStore.BackingModelNames.RecordIDAttribute, referenceString)
          fetchRequest.fetchLimit = 1
          let results = try backingMOC.fetch(fetchRequest)
          return results.last
@@ -459,7 +470,7 @@ public class StitchStore: NSIncrementalStore {
       var entityName = ""
       backingMOC.performAndWait {
          let value = backingMOC.object(with: backingID)
-         recordID = value[NSEntityDescription.StitchStoreRecordIDAttributeName] as! String
+         recordID = value[StitchStore.BackingModelNames.RecordIDAttribute] as! String
          entityName = value.entityName
       }
       return outwardManagedObjectIDForRecordEntity(recordID, entityName: entityName)

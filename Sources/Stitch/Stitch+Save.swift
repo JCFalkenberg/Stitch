@@ -98,7 +98,7 @@ extension StitchStore {
                caughtError = StitchStoreError.invalidReferenceObject
                break
             }
-            managedObject[NSEntityDescription.StitchStoreRecordIDAttributeName] = referenceObject
+            managedObject[StitchStore.BackingModelNames.RecordIDAttribute] = referenceObject
             do {
                try backingMOC.obtainPermanentIDs(for: [managedObject])
 

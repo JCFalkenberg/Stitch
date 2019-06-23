@@ -21,7 +21,7 @@ extension StitchStore {
    func createChangeSet(forUpdated object: NSManagedObject) {
       let changedKeys = changedPropertyKeys(Array(object.changedValues().keys), entity: object.entity)
       let changedKeysString = changedKeys.joined(separator: ",")
-      let recordIDString = object[NSEntityDescription.StitchStoreRecordIDAttributeName] as! String
+      let recordIDString = object[StitchStore.BackingModelNames.RecordIDAttribute] as! String
 
       let _ = ChangeSet(context: backingMOC,
                         entityName: object.entity.name!,
@@ -51,7 +51,7 @@ extension StitchStore {
    func changesCount() -> Int {
       var result = 0
       backingMOC.performAndWait {
-         let request = NSFetchRequest<NSNumber>(entityName: NSEntityDescription.StitchStoreChangeSetEntityName)
+         let request = NSFetchRequest<NSNumber>(entityName: StitchStore.BackingModelNames.ChangeSetEntity)
          request.resultType = .countResultType
          result = (try? backingMOC.fetch(request).first?.intValue) ?? 0
       }
@@ -61,13 +61,13 @@ extension StitchStore {
    func insertedAndUpdatedChangeSets() -> [ChangeSet] {
       var results: [ChangeSet] = []
       backingMOC.performAndWait {
-         let request = NSFetchRequest<ChangeSet>(entityName: NSEntityDescription.StitchStoreChangeSetEntityName)
+         let request = NSFetchRequest<ChangeSet>(entityName: StitchStore.BackingModelNames.ChangeSetEntity)
          request.predicate = NSPredicate(format: "(%K == %@ || %K == %@) && %K == %@",
-                                         NSEntityDescription.StitchStoreChangeTypeAttributeName,
+                                         StitchStore.BackingModelNames.ChangeTypeAttribute,
                                          NSNumber(value: RecordChange.inserted.rawValue),
-                                         NSEntityDescription.StitchStoreChangeTypeAttributeName,
+                                         StitchStore.BackingModelNames.ChangeTypeAttribute,
                                          NSNumber(value: RecordChange.updated.rawValue),
-                                         NSEntityDescription.StitchStoreChangeQueuedAttributeName,
+                                         StitchStore.BackingModelNames.ChangeQueuedAttribute,
                                          NSNumber(value: false))
          results = (try? backingMOC.fetch(request)) ?? []
       }
@@ -92,11 +92,11 @@ extension StitchStore {
    func deletedCKRecordIDs() -> [CKRecord.ID]? {
       var recordIDs = [CKRecord.ID]()
       backingMOC.performAndWait {
-         let request = NSFetchRequest<ChangeSet>(entityName: NSEntityDescription.StitchStoreChangeSetEntityName)
+         let request = NSFetchRequest<ChangeSet>(entityName: StitchStore.BackingModelNames.ChangeSetEntity)
          request.predicate = NSPredicate(format: "%K == %@ && %K == %@",
-                                         NSEntityDescription.StitchStoreChangeTypeAttributeName,
+                                         StitchStore.BackingModelNames.ChangeTypeAttribute,
                                          NSNumber(value: RecordChange.deleted.rawValue),
-                                         NSEntityDescription.StitchStoreChangeQueuedAttributeName,
+                                         StitchStore.BackingModelNames.ChangeQueuedAttribute,
                                          NSNumber(value: false))
          let results = (try? backingMOC.fetch(request)) ?? []
          for result in results {

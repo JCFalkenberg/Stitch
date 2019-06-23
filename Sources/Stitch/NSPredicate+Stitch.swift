@@ -14,7 +14,7 @@ extension NSPredicate {
    }
 
    convenience init(backingReferenceID: String) {
-      self.init(format: "%K == %@", NSEntityDescription.StitchStoreRecordIDAttributeName, backingReferenceID)
+      self.init(format: "%K == %@", StitchStore.BackingModelNames.RecordIDAttribute, backingReferenceID)
    }
 }
 

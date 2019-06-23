@@ -24,14 +24,6 @@ extension NSAttributeDescription {
 }
 
 extension NSEntityDescription {
-   static let StitchStoreEntityNameAttributeName              = "sm_LocalStore_EntityName"
-   static let StitchStoreChangeTypeAttributeName              = "sm_LocalStore_ChangeType"
-   static let StitchStoreRecordChangedPropertiesAttributeName = "sm_LocalStore_ChangedProperties"
-   static let StitchStoreChangeQueuedAttributeName            = "sm_LocalStore_Queued"
-   static let StitchStoreChangeSetEntityName                  = "SM_LocalStore_ChangeSetEntity"
-
-   static let StitchStoreRecordIDAttributeName                = "sm_LocalStore_RecordID"
-   static let StitchStoreRecordEncodedValuesAttributeName     = "sm_LocalStore_EncodedValues"
 
    convenience init(_ name: String,
                     attributes: [NSAttributeDescription],
@@ -45,12 +37,12 @@ extension NSEntityDescription {
 
    func modifyForStitchBackingStore() {
       managedObjectClassName = NSStringFromClass(NSManagedObject.self)
-      properties.append(NSAttributeDescription(NSEntityDescription.StitchStoreRecordIDAttributeName,
+      properties.append(NSAttributeDescription(StitchStore.BackingModelNames.RecordIDAttribute,
                                                optional: false,
                                                indexed: true,
                                                type: .stringAttributeType))
 
-      properties.append(NSAttributeDescription(NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName,
+      properties.append(NSAttributeDescription(StitchStore.BackingModelNames.RecordEncodedAttribute,
                                                optional: true,
                                                type: .binaryDataAttributeType))
    }
@@ -58,35 +50,35 @@ extension NSEntityDescription {
 
    class func changeSetEntity() -> NSEntityDescription {
       let attributes = [
-         NSAttributeDescription(StitchStoreEntityNameAttributeName,
+         NSAttributeDescription(StitchStore.BackingModelNames.EntityNameAttribute,
                                 optional: true,
                                 type: .stringAttributeType),
-         NSAttributeDescription(StitchStoreRecordIDAttributeName,
+         NSAttributeDescription(StitchStore.BackingModelNames.RecordIDAttribute,
                                 optional: false,
                                 indexed: true,
                                 type: .stringAttributeType),
-         NSAttributeDescription(StitchStoreRecordChangedPropertiesAttributeName,
+         NSAttributeDescription(StitchStore.BackingModelNames.ChangedPropertiesAttribute,
                                 optional: true,
                                 type: .stringAttributeType),
-         NSAttributeDescription(StitchStoreChangeTypeAttributeName,
+         NSAttributeDescription(StitchStore.BackingModelNames.ChangeTypeAttribute,
                                 optional: false,
                                 defaultValue: NSNumber(value: StitchStore.RecordChange.inserted.rawValue),
                                 type: .integer16AttributeType),
-         NSAttributeDescription(StitchStoreChangeQueuedAttributeName,
+         NSAttributeDescription(StitchStore.BackingModelNames.ChangeQueuedAttribute,
                                 optional: false,
                                 defaultValue: NSNumber(value: false),
                                 type: .booleanAttributeType)
       ]
 
-      return NSEntityDescription(StitchStoreChangeSetEntityName,
+      return NSEntityDescription(StitchStore.BackingModelNames.ChangeSetEntity,
                                  attributes: attributes,
                                  className: NSStringFromClass(ChangeSet.self))
    }
 
    var attributesByNameSansBacking: [String: NSAttributeDescription] {
       return attributesByName.filter {
-         $0.key != NSEntityDescription.StitchStoreRecordIDAttributeName &&
-         $0.key != NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
+         $0.key != StitchStore.BackingModelNames.RecordIDAttribute &&
+         $0.key != StitchStore.BackingModelNames.RecordEncodedAttribute
       }
    }
 

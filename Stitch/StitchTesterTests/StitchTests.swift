@@ -32,6 +32,13 @@ final class StitchTests: XCTestCase {
       XCTAssertNotNil(NSPersistentStoreCoordinator.registeredStoreTypes[StitchStore.storeType], "StitchStore not registered")
    }
 
+   func testChangeTypeNames() {
+      XCTAssertEqual(StitchStore.SyncTriggerType.localSave.printName, "local save")
+      XCTAssertEqual(StitchStore.SyncTriggerType.networkState.printName, "network state")
+      XCTAssertEqual(StitchStore.SyncTriggerType.storeAdded.printName, "store added")
+      XCTAssertEqual(StitchStore.SyncTriggerType.push.printName, "push notification")
+   }
+
    func testEntityModifier() {
       let entity = NSEntityDescription()
       entity.name = NSStringFromClass(Entry.self)
@@ -39,17 +46,18 @@ final class StitchTests: XCTestCase {
 
       entity.modifyForStitchBackingStore()
       XCTAssertEqual(entity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
-      XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreRecordIDAttributeName])
-      XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.RecordIDAttribute])
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.RecordEncodedAttribute])
    }
 
    func testChangeSetEntity() {
       let entity = NSEntityDescription.changeSetEntity()
-      XCTAssertEqual(entity.name, NSEntityDescription.StitchStoreChangeSetEntityName)
-      XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreEntityNameAttributeName])
-      XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreChangeTypeAttributeName])
-      XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreRecordChangedPropertiesAttributeName])
-      XCTAssertNotNil(entity.attributesByName[NSEntityDescription.StitchStoreChangeQueuedAttributeName])
+      XCTAssertEqual(entity.name, StitchStore.BackingModelNames.ChangeSetEntity)
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.RecordIDAttribute])
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.EntityNameAttribute])
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.ChangeTypeAttribute])
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.ChangedPropertiesAttribute])
+      XCTAssertNotNil(entity.attributesByName[StitchStore.BackingModelNames.ChangeQueuedAttribute])
    }
 
    func testTestModel() {
@@ -86,9 +94,9 @@ final class StitchTests: XCTestCase {
       XCTAssertFalse(model.validateStitchStoreModel(for: "Failure"))
       XCTAssertFalse(model.validateStitchStoreModel(for: "DoesntExist"))
 
-      XCTAssertFalse(validateAttribute(named: NSEntityDescription.StitchStoreRecordIDAttributeName))
-      XCTAssertFalse(validateAttribute(named: NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName))
-      XCTAssertFalse(validateEntity(named: NSEntityDescription.StitchStoreChangeSetEntityName))
+      XCTAssertFalse(validateAttribute(named: StitchStore.BackingModelNames.RecordIDAttribute))
+      XCTAssertFalse(validateAttribute(named: StitchStore.BackingModelNames.RecordEncodedAttribute))
+      XCTAssertFalse(validateEntity(named: StitchStore.BackingModelNames.ChangeSetEntity))
    }
 
    func testModifyModel() {
@@ -101,17 +109,17 @@ final class StitchTests: XCTestCase {
       //Make sure our outward model is ok still
       XCTAssertEqual(model.entities.count, 7)
       XCTAssertEqual(entity?.managedObjectClassName, NSStringFromClass(Entry.self))
-      XCTAssertNil(entity?.attributesByName[NSEntityDescription.StitchStoreRecordIDAttributeName])
-      XCTAssertNil(entity?.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
+      XCTAssertNil(entity?.attributesByName[StitchStore.BackingModelNames.RecordIDAttribute])
+      XCTAssertNil(entity?.attributesByName[StitchStore.BackingModelNames.RecordEncodedAttribute])
 
       XCTAssertEqual(backingModel.entities.count, 8)
       let backingEntity = backingModel.entitiesByName[NSStringFromClass(Entry.self)]!
       XCTAssertNotNil(backingEntity)
       XCTAssertEqual(backingEntity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
-      XCTAssertNotNil(backingEntity.attributesByName[NSEntityDescription.StitchStoreRecordIDAttributeName])
-      XCTAssertNotNil(backingEntity.attributesByName[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName])
+      XCTAssertNotNil(backingEntity.attributesByName[StitchStore.BackingModelNames.RecordIDAttribute])
+      XCTAssertNotNil(backingEntity.attributesByName[StitchStore.BackingModelNames.RecordEncodedAttribute])
 
-      XCTAssertNotNil(backingModel.entitiesByName[NSEntityDescription.StitchStoreChangeSetEntityName])
+      XCTAssertNotNil(backingModel.entitiesByName[StitchStore.BackingModelNames.ChangeSetEntity])
    }
 
    func testAddFailure() {

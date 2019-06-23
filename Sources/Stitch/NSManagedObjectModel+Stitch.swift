@@ -28,14 +28,14 @@ extension NSManagedObjectModel {
          result = false
       }
       for entity in entities(forConfigurationName: configuration) ?? [] {
-         if entity.name == NSEntityDescription.StitchStoreChangeSetEntityName {
-            print("\(NSEntityDescription.StitchStoreChangeSetEntityName) is a reserved entity name")
+         if entity.name == StitchStore.BackingModelNames.ChangeSetEntity {
+            print("\(StitchStore.BackingModelNames.ChangeSetEntity) is a reserved entity name")
             result = false
          }
          // Add tests for this!
          for attributeName in entity.attributesByName.keys {
-            if attributeName == NSEntityDescription.StitchStoreRecordIDAttributeName ||
-               attributeName == NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
+            if attributeName == StitchStore.BackingModelNames.RecordIDAttribute ||
+               attributeName == StitchStore.BackingModelNames.RecordEncodedAttribute
             {
                print("\(attributeName) is a reserved attribute key")
                result = false
@@ -63,8 +63,8 @@ extension NSManagedObjectModel {
 
       for entity in self.entities {
          for (name, property) in entity.propertiesByName {
-            if name == NSEntityDescription.StitchStoreRecordIDAttributeName ||
-               name == NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
+            if name == StitchStore.BackingModelNames.RecordIDAttribute ||
+               name == StitchStore.BackingModelNames.RecordEncodedAttribute
             {
                continue
             }

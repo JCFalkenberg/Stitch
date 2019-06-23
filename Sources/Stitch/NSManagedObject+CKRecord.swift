@@ -23,7 +23,7 @@ extension NSManagedObject {
    }
 
    func ckRecordID(zone: CKRecordZone.ID) -> CKRecord.ID? {
-      guard let recordIDString = self[NSEntityDescription.StitchStoreRecordIDAttributeName] as? String else { return nil }
+      guard let recordIDString = self[StitchStore.BackingModelNames.RecordIDAttribute] as? String else { return nil }
       return CKRecord.ID(recordName: recordIDString, zoneID: zone)
    }
 
@@ -99,7 +99,7 @@ extension NSManagedObject {
    }
 
    func updatedCKRecord(zone: CKRecordZone.ID, using changedKeys: [String]? = nil) -> CKRecord? {
-      let encoded: Data? = self[NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName] as? Data
+      let encoded: Data? = self[StitchStore.BackingModelNames.RecordEncodedAttribute] as? Data
       var record: CKRecord? = nil
       if let encoded = encoded {
          record = CKRecord(with: encoded)
