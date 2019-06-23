@@ -12,9 +12,10 @@ extension StitchStore
    internal func fetch(_ fetchRequest: NSFetchRequest<NSFetchRequestResult>,
                           context: NSManagedObjectContext) throws -> [Any]?
    {
-      guard let request = fetchRequest.transfer(to: self) else { throw StitchStoreError.invalidRequest }
+      let request = try fetchRequest.transfer(to: self)
 
       var mappedResults = [AnyObject]()
+      var caughtError: Error? = nil
       self.backingMOC.performAndWait {
          do {
             let resultsFromLocalStore = try self.backingMOC.fetch(request)
@@ -32,8 +33,12 @@ extension StitchStore
                }
             }
          } catch {
-            print("Error executing fetch request!")
+            print("Error executing fetch request! \(error)")
+            caughtError = error
          }
+      }
+      if let caughtError = caughtError {
+         throw caughtError
       }
       mappedResults = mappedResults.map{ (object: AnyObject) -> AnyObject in
          var result: AnyObject = object

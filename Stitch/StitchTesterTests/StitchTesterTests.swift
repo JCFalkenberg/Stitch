@@ -22,8 +22,9 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       do {
          coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
          let options: [String: Any] =  [
-            StitchStore.Options.BackingStoreType : NSInMemoryStoreType,
-            StitchStore.Options.ConnectionStatusDelegate : self
+            StitchStore.Options.BackingStoreType: NSInMemoryStoreType,
+            StitchStore.Options.ConnectionStatusDelegate: self,
+            StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true)
          ]
          store = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
                                                      configurationName: "Success",
@@ -153,6 +154,31 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       } catch {
          XCTFail("Error fetching results \(error)")
       }
+   }
+
+   func testFetchReplacement() {
+      let entry = addEntryAndSave()
+      guard let location = addLocationAndSave() else {
+         XCTFail("need location for this!")
+         return
+      }
+
+      entry?.location = location
+      save()
+      let request = NSFetchRequest<Entry>(entityName: "Entry")
+      request.predicate = NSPredicate(format: "location == %@ && text == %@", location, "be gay do crimes fk cops")
+      do {
+         guard let results = try context?.fetch(request) else {
+            XCTFail("nil results from fetch")
+            return
+         }
+         XCTAssertEqual(results.count, 1)
+         XCTAssertNotNil(results.first?.location)
+         XCTAssertEqual(results.first?.location?.displayName, "Home")
+      } catch {
+         XCTFail("Error fetching results \(error)")
+      }
+
    }
 
    func testModifyObject() {

@@ -16,9 +16,9 @@ extension NSFetchRequest {
       return request
    }
 
-   @objc func transfer(to store: StitchStore) -> NSFetchRequest<NSFetchRequestResult>? {
-      guard let entityName = entityName else { return nil }
-      guard let entity = store.backingModel?.entitiesByName[entityName] else { return nil }
+   @objc func transfer(to store: StitchStore) throws -> NSFetchRequest<NSFetchRequestResult> {
+      guard let entityName = entityName else { throw StitchStore.StitchStoreError.invalidRequest }
+      guard let entity = store.backingModel?.entitiesByName[entityName] else { throw StitchStore.StitchStoreError.invalidRequest }
 
       let request = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
       request.sortDescriptors = sortDescriptors
@@ -42,7 +42,7 @@ extension NSFetchRequest {
       request.entity = entity
 
       if store.fetchPredicateReplacementOption, let predicate = predicate {
-         request.predicate = (predicate.copy() as! NSPredicate).predicateByReplacingManagedObjects(using: store)
+         request.predicate = try (predicate.copy() as! NSPredicate).predicateByReplacingManagedObjects(using: store)
       } else {
          request.predicate = predicate
       }

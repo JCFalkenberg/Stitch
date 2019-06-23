@@ -8,8 +8,8 @@
 import CoreData
 
 extension NSPredicate {
-   @objc func predicateByReplacingManagedObjects(using store: StitchStore) -> NSPredicate {
-      print("predicate format: \(predicateFormat)")
+   @objc func predicateByReplacingManagedObjects(using store: StitchStore) throws -> NSPredicate {
+//      print("predicate format: \(predicateFormat)")
       return self
    }
 
@@ -18,64 +18,39 @@ extension NSPredicate {
    }
 }
 
-extension NSComparisonPredicate {
-   override func predicateByReplacingManagedObjects(using store: StitchStore) -> NSPredicate {
-      var rightExp = rightExpression
-      var changes = false
-      if rightExp.expressionType == .constantValue,
-         let right = rightExp.constantValue as? NSManagedObject
-      {
-         do {
-            try right.managedObjectContext?.obtainPermanentIDs(for: [right])
-         } catch {
-            print("error retrieving permanent id's \(error)")
-         }
-         if let reference = store.referenceObject(for: right.objectID) as? String,
-            let backing = store.backingObject(for: reference, entity: right.entity.name!)
-         {
-            changes = true
-            rightExp = NSExpression(forConstantValue: backing)
-         }
-      }
+extension NSExpression {
+   func expressionByReplacingManagedObjects(using store: StitchStore) throws -> NSExpression {
+      guard expressionType == .constantValue,
+         let value = constantValue as? NSManagedObject else { return self }
 
-      var leftExp = leftExpression
-      if leftExp.expressionType == .constantValue,
-         let left = leftExp.constantValue as? NSManagedObject
-      {
-         do {
-            try left.managedObjectContext?.obtainPermanentIDs(for: [left])
-         } catch {
-            print("error retrieving permanent id's \(error)")
-         }
-         if let reference = store.referenceObject(for: left.objectID) as? String,
-            let backing = store.backingObject(for: reference, entity: left.entity.name!)
-         {
-            changes = true
-            leftExp = NSExpression(forConstantValue: backing)
-         }
-      }
-      if changes {
-         return NSComparisonPredicate(leftExpression: leftExp,
-                                      rightExpression: rightExp,
-                                      modifier: comparisonPredicateModifier,
-                                      type: predicateOperatorType,
-                                      options: options)
-      } else {
-         return self
-      }
+      try value.managedObjectContext?.obtainPermanentIDs(for: [value])
+      guard let reference = store.referenceObject(for: value.objectID) as? String,
+         let backing = store.backingObject(for: reference, entity: value.entity.name!) else { return self }
+
+      return NSExpression(forConstantValue: backing)
+   }
+}
+
+extension NSComparisonPredicate {
+   override func predicateByReplacingManagedObjects(using store: StitchStore) throws -> NSPredicate {
+      let rightExp = try rightExpression.expressionByReplacingManagedObjects(using: store)
+      let leftExp = try leftExpression.expressionByReplacingManagedObjects(using: store)
+      
+      return NSComparisonPredicate(leftExpression: leftExp,
+                                   rightExpression: rightExp,
+                                   modifier: comparisonPredicateModifier,
+                                   type: predicateOperatorType,
+                                   options: options)
    }
 }
 
 extension NSCompoundPredicate {
-   override func predicateByReplacingManagedObjects(using store: StitchStore) -> NSPredicate {
-      if let subpredicates = subpredicates as? [NSPredicate] {
-         var replacements = [NSPredicate]()
-         for subpredicate in subpredicates {
-            replacements.append(subpredicate.predicateByReplacingManagedObjects(using: store))
-         }
-         return NSCompoundPredicate(type: compoundPredicateType, subpredicates: replacements)
+   override func predicateByReplacingManagedObjects(using store: StitchStore) throws -> NSPredicate {
+      guard let subpredicates = subpredicates as? [NSPredicate] else { return self }
+      var replacements = [NSPredicate]()
+      for subpredicate in subpredicates {
+         try replacements.append(subpredicate.predicateByReplacingManagedObjects(using: store))
       }
-      print("predicate format: \(predicateFormat)")
-      return self
+      return NSCompoundPredicate(type: compoundPredicateType, subpredicates: replacements)
    }
 }
