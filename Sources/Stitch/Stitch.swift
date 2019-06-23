@@ -226,7 +226,12 @@ public class StitchStore: NSIncrementalStore {
          super.init(persistentStoreCoordinator: root, configurationName: name, at: url, options: options)
          return
       }
-      backingModel = rooted.managedObjectModel.copyStitchBackingModel()
+      if !rooted.managedObjectModel.validateStitchStoreModel(for: name ?? "Default") {
+         print("Unable to validate store model!")
+         super.init(persistentStoreCoordinator: root, configurationName: name, at: url, options: options)
+         return
+      }
+      backingModel = rooted.managedObjectModel.copyStichBackingModel(for: name ?? "Default")
 
       if let policyNumber = options?[Options.SyncConflictResolutionPolicy] as? NSNumber,
          let policy = ConflictPolicy(rawValue: policyNumber.int16Value)
@@ -292,10 +297,10 @@ public class StitchStore: NSIncrementalStore {
       if !NSPersistentStoreCoordinator.registeredStoreTypes.keys.contains(storeType) {
          throw StitchStoreError.invalidBackingStoreType
       }
-      guard let backingModel = backingModel else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
-      if !backingModel.validateStitchStoreModel(for: configurationName) {
+      if !(persistentStoreCoordinator?.managedObjectModel.validateStitchStoreModel(for: configurationName) ?? false) {
          throw StitchStoreError.invalidStoreModelForConfiguration
       }
+      guard let backingModel = backingModel else { throw StitchStoreError.backingStoreCreationFailed(underlyingError: nil) }
       backingPersistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: backingModel)
 
       var storeURL: URL? = url

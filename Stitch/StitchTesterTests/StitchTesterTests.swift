@@ -11,6 +11,7 @@ import CoreData
 @testable import Stitch
 
 class StitchTesterTests: XCTestCase, StitchConnectionStatus {
+   var model: NSManagedObjectModel = NSManagedObjectModel.StitchTestsModel
    var coordinator: NSPersistentStoreCoordinator? = nil
    var context: NSManagedObjectContext? = nil
    var store: StitchStore? = nil
@@ -19,7 +20,6 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
    override func setUp() {
       do {
-         let model = NSManagedObjectModel.StitchTestsModel
          coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
          let options: [String: Any] =  [
             StitchStore.Options.BackingStoreType : NSInMemoryStoreType,
@@ -51,8 +51,12 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
          XCTFail("Context should not be nil")
          return nil
       }
+      guard let entity = model.entitiesByName["Entry"] else {
+         XCTFail("No entity!")
+         return nil
+      }
 
-      let entry = Entry(entity: Entry.entity(), insertInto: context)
+      let entry = Entry(entity: entity, insertInto: context)
       entry.text = "be gay do crimes fk cops"
 
       save()

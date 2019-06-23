@@ -8,31 +8,40 @@
 import CoreData
 
 extension NSManagedObjectModel {
-   func copyStitchBackingModel() -> NSManagedObjectModel {
-      let backingModel: NSManagedObjectModel = self.copy() as! NSManagedObjectModel
-      for entity in backingModel.entities {
+   func copyStichBackingModel(for configuration: String) -> NSManagedObjectModel {
+      let backingModel = self.copy() as! NSManagedObjectModel
+      for entity in backingModel.entities(forConfigurationName: configuration) ?? [] {
          entity.modifyForStitchBackingStore()
       }
       let changeSetEntity = NSEntityDescription.changeSetEntity()
       backingModel.entities.append(changeSetEntity)
       // TODO: Add test for this
-      for configuration in backingModel.configurations {
-         let configEntities = backingModel.entities(forConfigurationName: configuration) ?? []
-         backingModel.setEntities(configEntities + [changeSetEntity],
-                                  forConfigurationName: configuration)
-      }
+      backingModel.setEntities((backingModel.entities(forConfigurationName: configuration) ?? []) + [changeSetEntity],
+                               forConfigurationName: configuration)
       return backingModel
    }
 
-   func validateStitchStoreModel(for configuration: String = "Default") -> Bool {
+   func validateStitchStoreModel(for configuration: String) -> Bool {
       var result = true
       if !configurations.contains(configuration) {
          print("model has no configuration named \(configuration)")
          result = false
       }
       for entity in entities(forConfigurationName: configuration) ?? [] {
+         if entity.name == NSEntityDescription.StitchStoreChangeSetEntityName {
+            print("\(NSEntityDescription.StitchStoreChangeSetEntityName) is a reserved name")
+            result = false
+         }
          // Add tests for this!
-         for (_, relationship) in entity.relationshipsByName {
+         for attributeName in entity.attributesByName.keys {
+            if attributeName == NSEntityDescription.StitchStoreRecordIDAttributeName ||
+               attributeName == NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName
+            {
+               print("\(attributeName) is a reserved ID key")
+               result = false
+            }
+         }
+         for relationship in entity.relationshipsByName.values {
             if let inverse = relationship.inverseRelationship {
                if relationship.isToMany && inverse.isToMany {
                   print("Many to many relationships are not presently supported.")

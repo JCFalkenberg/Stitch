@@ -61,11 +61,32 @@ final class StitchTests: XCTestCase {
       XCTAssertEqual(model.entities.count, 7)
    }
 
+   func validateAttribute(named: String) -> Bool {
+      let backingAttributesModel = NSManagedObjectModel()
+      let entity = NSEntityDescription("BadEntity", attributes:
+         [NSAttributeDescription(named,
+                                 optional: true,
+                                 type: .stringAttributeType)]
+      )
+      backingAttributesModel.entities.append(entity)
+      return backingAttributesModel.validateStitchStoreModel()
+   }
+   func validateEntity(named: String) -> Bool {
+      let entityModel = NSManagedObjectModel()
+      let entity = NSEntityDescription(named, attributes: [])
+      entityModel.entities.append(entity)
+      return entityModel.validateStitchStoreModel()
+   }
+
    func testModelValidator() {
       let model = NSManagedObjectModel.StitchTestsModel
       XCTAssertTrue(model.validateStitchStoreModel(for: "Success"))
       XCTAssertFalse(model.validateStitchStoreModel(for: "Failure"))
       XCTAssertFalse(model.validateStitchStoreModel(for: "DoesntExist"))
+
+      XCTAssertFalse(validateAttribute(named: NSEntityDescription.StitchStoreRecordIDAttributeName))
+      XCTAssertFalse(validateAttribute(named: NSEntityDescription.StitchStoreRecordEncodedValuesAttributeName))
+      XCTAssertFalse(validateEntity(named: NSEntityDescription.StitchStoreChangeSetEntityName))
    }
 
    func testModifyModel() {
@@ -73,7 +94,7 @@ final class StitchTests: XCTestCase {
       let entity = model.entitiesByName[NSStringFromClass(Entry.self)]
       XCTAssertNotNil(entity)
 
-      let backingModel = model.copyStitchBackingModel()
+      let backingModel = model.copyStichBackingModel(for: "Success")
 
       //Make sure our outward model is ok still
       XCTAssertEqual(model.entities.count, 7)
