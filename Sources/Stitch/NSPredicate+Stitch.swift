@@ -19,15 +19,26 @@ extension NSPredicate {
 }
 
 extension NSExpression {
+   func backingObject(for outward: NSManagedObject, using store: StitchStore) throws -> NSManagedObject {
+      try outward.managedObjectContext?.obtainPermanentIDs(for: [outward])
+      guard let reference = store.referenceObject(for: outward.objectID) as? String else { throw StitchStore.StitchStoreError.invalidReferenceObject }
+      guard let backing = store.backingObject(for: reference, entity: outward.entityName) else { throw StitchStore.StitchStoreError.invalidReferenceObject }
+      return backing
+   }
+
    func expressionByReplacingManagedObjects(using store: StitchStore) throws -> NSExpression {
-      guard expressionType == .constantValue,
-         let value = constantValue as? NSManagedObject else { return self }
-
-      try value.managedObjectContext?.obtainPermanentIDs(for: [value])
-      guard let reference = store.referenceObject(for: value.objectID) as? String,
-         let backing = store.backingObject(for: reference, entity: value.entity.name!) else { return self }
-
-      return NSExpression(forConstantValue: backing)
+      guard expressionType == .constantValue else { return self }
+      if let value = constantValue as? NSManagedObject {
+         let backing = try backingObject(for: value, using: store)
+         return NSExpression(forConstantValue: backing)
+      } else if let value = constantValue as? [NSManagedObject] {
+         let mapped = try value.map { try backingObject(for: $0, using: store) }
+         return NSExpression(forConstantValue: mapped)
+      } else if let value = constantValue as? Set<NSManagedObject> {
+         let mapped = try value.map { try backingObject(for: $0, using: store) }
+         return NSExpression(forConstantValue: mapped)
+      }
+      return self
    }
 }
 

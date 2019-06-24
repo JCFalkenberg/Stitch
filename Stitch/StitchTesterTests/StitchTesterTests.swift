@@ -188,6 +188,31 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
          XCTFail("Error replacing predicate. \(error)")
       }
    }
+   func testReplacementInAndContains() {
+      guard let store = store else {
+         XCTFail("No store!")
+         return
+      }
+
+      guard let entry = addEntryAndSave(),
+         let entry2 = addEntryAndSave() else {
+            XCTFail("No entry!")
+            return
+      }
+
+      let predicate = NSPredicate(format: "location in %@", [entry, entry2])
+      let containsPredicate = NSPredicate(format: "%@ contains %@", [entry, entry2], entry)
+
+      do {
+         let replacedPredicate: NSPredicate? = try predicate.predicateByReplacingManagedObjects(using: store)
+         XCTAssert(replacedPredicate?.isKind(of: NSComparisonPredicate.self) ?? false)
+
+         let replacedContainsPredicate: NSPredicate? = try (containsPredicate.copy() as! NSPredicate).predicateByReplacingManagedObjects(using: store)
+         XCTAssert(replacedContainsPredicate?.isKind(of: NSComparisonPredicate.self) ?? false)
+      } catch {
+         XCTFail("Error replacing predicate. \(error)")
+      }
+   }
 
    func testFetchReplacement() {
       let entry = addEntryAndSave()
