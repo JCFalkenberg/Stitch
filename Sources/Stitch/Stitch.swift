@@ -123,7 +123,7 @@ public class StitchStore: NSIncrementalStore {
       ///
       /// FetchRequest preidcate replacement option. Requires objects to be replaced be saved prior to replacing them, otherwise errors will be thrown.
       ///
-      /// Supports replacing managed objects in:  keyPath == %@, keyPath in %@ and %@ contains %@ predicates at this time
+      /// Supports replacing managed objects in: " keyPath == %@", "keyPath in %@" and "%@ contains %@" predicates, as well as compound predicates with those as sub predicates.
       public static let FetchRequestPredicateReplacement = StitchStoreFetchRequestPredicateReplacementExperiment
       /// SyncConflictResolutionPolicy is an NSNumber of the raw value of one of the options in StitchStore.ConflictPolicy.
       /// Defaults to StitchStore.ConflictPolicy.serverWins

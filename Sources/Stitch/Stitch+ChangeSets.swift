@@ -48,19 +48,19 @@ extension StitchStore {
                         changeType: .deleted)
    }
 
-   func changesCount() -> Int {
+   func changesCount(_ context: NSManagedObjectContext) -> Int {
       var result = 0
-      backingMOC.performAndWait {
+      context.performAndWait {
          let request = NSFetchRequest<NSNumber>(entityName: StitchStore.BackingModelNames.ChangeSetEntity)
          request.resultType = .countResultType
-         result = (try? backingMOC.fetch(request).first?.intValue) ?? 0
+         result = (try? context.fetch(request).first?.intValue) ?? 0
       }
       return result
    }
 
-   func insertedAndUpdatedChangeSets() -> [ChangeSet] {
+   func insertedAndUpdatedChangeSets(_ context: NSManagedObjectContext) -> [ChangeSet] {
       var results: [ChangeSet] = []
-      backingMOC.performAndWait {
+      context.performAndWait {
          let request = NSFetchRequest<ChangeSet>(entityName: StitchStore.BackingModelNames.ChangeSetEntity)
          request.predicate = NSPredicate(format: "(%K == %@ || %K == %@) && %K == %@",
                                          StitchStore.BackingModelNames.ChangeTypeAttribute,
@@ -69,7 +69,7 @@ extension StitchStore {
                                          NSNumber(value: RecordChange.updated.rawValue),
                                          StitchStore.BackingModelNames.ChangeQueuedAttribute,
                                          NSNumber(value: false))
-         results = (try? backingMOC.fetch(request)) ?? []
+         results = (try? context.fetch(request)) ?? []
       }
 
       return results
@@ -89,16 +89,20 @@ extension StitchStore {
       return Array(ckRecordsDict.values)
    }
 
-   func deletedCKRecordIDs() -> [CKRecord.ID]? {
+   func insertedAndUpdatedCKRecords(_ context: NSManagedObjectContext) -> [CKRecord] {
+      return ckRecords(for: insertedAndUpdatedChangeSets(context))
+   }
+
+   func deletedCKRecordIDs(_ context: NSManagedObjectContext) -> [CKRecord.ID] {
       var recordIDs = [CKRecord.ID]()
-      backingMOC.performAndWait {
+      context.performAndWait {
          let request = NSFetchRequest<ChangeSet>(entityName: StitchStore.BackingModelNames.ChangeSetEntity)
          request.predicate = NSPredicate(format: "%K == %@ && %K == %@",
                                          StitchStore.BackingModelNames.ChangeTypeAttribute,
                                          NSNumber(value: RecordChange.deleted.rawValue),
                                          StitchStore.BackingModelNames.ChangeQueuedAttribute,
                                          NSNumber(value: false))
-         let results = (try? backingMOC.fetch(request)) ?? []
+         let results = (try? context.fetch(request)) ?? []
          for result in results {
             let ckRecordID = CKRecord.ID(recordName: result.recordID, zoneID: zoneID)
             recordIDs.append(ckRecordID)

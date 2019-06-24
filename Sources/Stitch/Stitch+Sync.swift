@@ -22,55 +22,6 @@ extension StitchStore {
       }
    }
 
-   public typealias ZoneModifyCompletion = (_ zone: Bool, _ subscription: Bool, Error?) -> Void
-   @objc open class func destroyZone(zone: CKRecordZone,
-                                     in database: CKDatabase?,
-                                     on queue: OperationQueue,
-                                     completion: @escaping ZoneModifyCompletion)
-   {
-//      let deleteSubOperation = CKModifySubscriptionsOperation(delete: zone.zoneID.zoneName,
-//                                                              in: database)
-//      { (success, error) in
-//         if success {
-//            let deleteOperation = CKModifyRecordZonesOperation(delete: zone,
-//                                                               in: database)
-//            { (success, error) in
-//               DispatchQueue.main.async {
-//                  completion(success, true, error)
-//               }
-//            }
-//            queue.addOperation(deleteOperation)
-//         } else {
-//            DispatchQueue.main.async {
-//               completion(false, false, error)
-//            }
-//         }
-//      }
-//      queue.addOperation(deleteSubOperation)
-   }
-
-   open class func setupZone(zone: CKRecordZone,
-                             in database: CKDatabase?,
-                             on queue: OperationQueue,
-                             completion: @escaping ZoneModifyCompletion)
-   {
-//      let setupOperation = CKModifyRecordZonesOperation(create: zone,
-//                                                        in: database)
-//      { (created, error) in
-//         if created {
-//            let subOperation = CKModifySubscriptionsOperation(create: zone.zoneID,
-//                                                              in: database)
-//            { (subCreated, error) in
-//               completion(true , subCreated, error)
-//            }
-//            queue.addOperation(subOperation)
-//         } else {
-//            completion(false, false, error)
-//         }
-//      }
-//      queue.addOperation(setupOperation)
-   }
-
    /// triggerSync causes the database to run a sync cycle if an internet connection is available.
    /// Can be called automatically on save if the SMStore.Options.SyncOnSave flag is set in the options dictionary to true
    /// Will automatically queue up another sync cycle if a second call is made while a sync is in progress
@@ -119,7 +70,7 @@ extension StitchStore {
 //            {
 //               print("Sync token out of date, delete and retry sync");
 //               //Delete our token and retry sync
-//               tokenHandler.delete()
+//               tokenHandler.deleteToken()
 //               DispatchQueue.main.async(execute: { () -> Void in
 //                  triggerSync(reason);
 //               });
@@ -147,21 +98,15 @@ extension StitchStore {
       }
    }
 
-   internal func setupStore(_ reason: SyncTriggerType) {
-      let recordZone = CKRecordZone(zoneName: zoneID.zoneName)
-      StitchStore.setupZone(zone: recordZone,
-                            in: database,
-                            on: operationQueue)
-      { (zone, subscription, error) in
-         /* TO DO: ADD ERROR HANDLING */
-         if zone {
-            self.setMetadata(self.zoneID.zoneName, key: self.zoneID.zoneName)
-         }
-         if subscription {
-            self.setMetadata(self.subscriptionName, key: self.subscriptionName)
-         }
+   public typealias ZoneModifyCompletion = (Result<(Bool), Error>) -> Void
 
-         if zone && subscription {
+   fileprivate func setupStore(_ reason: SyncTriggerType) {
+      setupZone() { (result) in
+         switch result {
+         case .success(_):
+            self.setMetadata(self.zoneID.zoneName, key: self.zoneID.zoneName)
+            self.setMetadata(self.subscriptionName, key: self.subscriptionName)
+
             var bundleIDs = self.metadata[Metadata.SetupFromBundleIDs] as? [String] ?? [String]()
             if let bundleIdentifier = Bundle.main.bundleIdentifier,
                !bundleIDs.contains(bundleIdentifier)
@@ -169,9 +114,54 @@ extension StitchStore {
                bundleIDs.append(bundleIdentifier)
                self.setMetadata(bundleIDs, key: "SMStoreSetupFromBundleIDs")
             }
+         case .failure(let error):
+            DispatchQueue.main.async { () -> Void in
+               NotificationCenter.default.post(name: Notifications.DidFailSync,
+                                               object: self,
+                                               userInfo: [NSLocalizedDescriptionKey: error.localizedDescription])
+            }
          }
-         self.syncStore(reason)
       }
+   }
+
+   fileprivate func setupZone(completion: @escaping ZoneModifyCompletion) {
+      let recordZone = CKRecordZone(zoneName: zoneID.zoneName)
+      let setupOperation = CKModifyRecordZonesOperation(create: recordZone,
+                                                        in: database)
+      { (result) in
+         switch result {
+         case .success(_):
+            let subOperation = CKModifySubscriptionsOperation(create: recordZone.zoneID,
+                                                              name: self.subscriptionName,
+                                                              in: self.database,
+                                                              completion: completion)
+            self.operationQueue.addOperation(subOperation)
+         case .failure(let error):
+            completion(.failure(error))
+         }
+      }
+      operationQueue.addOperation(setupOperation)
+   }
+
+   class func destroyZone(zone: CKRecordZone,
+                                     in database: CKDatabase?,
+                                     on queue: OperationQueue,
+                                     completion: @escaping ZoneModifyCompletion)
+   {
+      let deleteSubOperation = CKModifySubscriptionsOperation(delete: zone.zoneID.zoneName,
+                                                              in: database)
+      { (result) in
+         switch result {
+         case .success(_):
+            let deleteOperation = CKModifyRecordZonesOperation(delete: zone,
+                                                               in: database,
+                                                               setupCompletion: completion)
+            queue.addOperation(deleteOperation)
+         case .failure(let error):
+            completion(.failure(error))
+         }
+      }
+      queue.addOperation(deleteSubOperation)
    }
 
    fileprivate func checkSyncAgain() {
@@ -193,14 +183,14 @@ extension StitchStore {
       for object in objects {
          guard let entityName = object.entity.name else { continue }
          guard let backingReference = referenceObject(for: object.objectID) as? String else { continue }
-         if !downloadingAssets.contains(backingReference) {
-            downloadingAssets.insert(backingReference)
-            if var backingReferences = assetReferencesByType[entityName] {
-               backingReferences.append(backingReference)
-               assetReferencesByType[entityName] = backingReferences
-            } else {
-               assetReferencesByType[entityName] = [backingReference]
-            }
+         guard !downloadingAssets.contains(backingReference) else { continue }
+
+         downloadingAssets.insert(backingReference)
+         if var backingReferences = assetReferencesByType[entityName] {
+            backingReferences.append(backingReference)
+            assetReferencesByType[entityName] = backingReferences
+         } else {
+            assetReferencesByType[entityName] = [backingReference]
          }
       }
       downloadBackingRecordsForReferences(assetReferencesByType)

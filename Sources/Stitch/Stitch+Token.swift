@@ -14,7 +14,7 @@ extension StitchStore {
       return NSKeyedUnarchiver.unarchiveObject(with: data) as? CKServerChangeToken
    }
 
-   func save(serverChangeToken: CKServerChangeToken?) {
+   func saveToken(_ serverChangeToken: CKServerChangeToken?) {
       newToken = serverChangeToken
    }
 
@@ -22,14 +22,14 @@ extension StitchStore {
       return newToken
    }
 
-   func commit() {
+   func commitToken() {
       if let token = self.newToken {
          let data = NSKeyedArchiver.archivedData(withRootObject: token)
          setMetadata(data as AnyObject, key: Metadata.SyncTokenKey)
       }
    }
 
-   func delete() {
+   func deleteToken() {
       setMetadata(nil, key: Metadata.SyncTokenKey)
    }
 }
