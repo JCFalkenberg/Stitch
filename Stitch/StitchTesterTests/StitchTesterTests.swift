@@ -43,6 +43,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       context = nil
       if let store = store {
          try? coordinator?.remove(store)
+         self.store = nil
       }
       coordinator = nil
    }
@@ -52,12 +53,8 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
          XCTFail("Context should not be nil")
          return nil
       }
-      guard let entity = model.entitiesByName["Entry"] else {
-         XCTFail("No entity!")
-         return nil
-      }
 
-      let entry = Entry(entity: entity, insertInto: context)
+      let entry = Entry(entity: Entry.entity(), insertInto: context)
       entry.text = "be gay do crimes fk cops"
 
       save()
@@ -68,12 +65,8 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
          XCTFail("Context should not be nil")
          return nil
       }
-      guard let entity = model.entitiesByName["Location"] else {
-         XCTFail("No entity!")
-         return nil
-      }
 
-      let location = Location(entity: entity, insertInto: context)
+      let location = Location(entity: Location.entity(), insertInto: context)
       location.displayName = "Home"
 
       save()
@@ -256,7 +249,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       let text = records?.first?.value(forKey: "text") as? String
       XCTAssertNotNil(text)
       XCTAssertEqual(text, entry?.text)
-      XCTAssertEqual(store?.deletedCKRecordIDs(context!).count, 0)
+      XCTAssertEqual(store?.deletedCKRecordIDs(store!.backingMOC).count, 0)
    }
 
    func testDeleteObject() {
@@ -269,6 +262,6 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
 
       save()
       XCTAssertEqual(store?.changesCount(store!.backingMOC), 2)
-      XCTAssertEqual(store?.deletedCKRecordIDs(storstore!.backingMOC).count, 1)
+      XCTAssertEqual(store?.deletedCKRecordIDs(store!.backingMOC).count, 1)
    }
 }

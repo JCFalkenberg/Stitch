@@ -299,6 +299,44 @@ class SyncOperation: AsyncOperation {
    fileprivate func resolvedPushUpdates(insertedOrUpdated: [CKRecord],
                                         deletedIDs: [CKRecord.ID])
    {
+//      pushUpdateCount = insertedOrUpdated.count
+//      pushDeleteCount = deletedIDs.count
+//
+//      recordUpdateIDsToPush = Set(insertedOrUpdated.map { $0.recordID })
+//      recordDeleteIdsToPush = Set(deletedIDs)
+//
+//      if pushUpdateCount == 0 && pushDeleteCount == 0 {
+//         saveMergedChanges()
+//         return
+//      }
+//
+//      self.pushOperations = PushChangesOperation.operationsForRecords(insertedOrUpdated: insertedOrUpdated,
+//                                                                      deletedIDs: deletedIDs,
+//                                                                      resolved: true,
+//                                                                      database: self.database)
+//      { (operation, error) in
+//         if operation.conflicted.count > 0 && error == nil {
+//            print("There shouldnt be conflicts here!")
+//         } else if operation.conflicted.count == 0 && error == nil {
+//            self.pushNextBatch()
+//         } else {
+//            //probably need to backoff, handle that somehow...
+//            print("This would be a backoff error probably... \(error.debugDescription)")
+//
+//            if let error = error as? CKError, error.backoffIfNeeded() {
+//               self.retryPush(operation)
+//            } else {
+//               print("Ok.... \(String(describing: error))")
+//               //probably something horribly wrong has happened, and we should inform the UI of it
+//            }
+//         }
+//      }
+//      if self.pushOperations.count > 0 {
+//         pushNextBatch()
+//      } else {
+//         print("No local changes to push!")
+//         saveMergedChanges()
+//      }
    }
 
    fileprivate func saveMergedChanges() {
@@ -331,15 +369,15 @@ class SyncOperation: AsyncOperation {
    }
 
    fileprivate func deleteManagedObjects() throws {
-//      if serverDeletedRecordIDsByType.count > 0 {
-//         let results = try serverDeletedRecordIDsByType.deleteRecords(in: backingContext)
-//         self.removed.append(contentsOf: results)
-//      }
+      if serverDeletedRecordIDsByType.count > 0 {
+         let results = try serverDeletedRecordIDsByType.deleteRecords(in: syncContext)
+         self.removed.append(contentsOf: results)
+      }
    }
 
    fileprivate func updateRecordReferences() throws {
-//      if serverInsertedOrUpdated.count > 0 {
-//         try serverInsertedOrUpdated.updateRecordReferences(in: backingContext)
-//      }
+      if serverInsertedOrUpdated.count > 0 {
+         try serverInsertedOrUpdated.updateRecordReferences(in: syncContext)
+      }
    }
 }
