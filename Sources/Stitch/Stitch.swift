@@ -175,7 +175,7 @@ public class StitchStore: NSIncrementalStore {
       /// ChangedEntitiesToMigrate: storing what entities will need migrating next time a sync cycle occurs
       public static let ChangedEntitiesToMigrate = StitchStoreChangedEntitiesToMigrate
       /// SyncOperationServerToken: CloudKit sync operation serialized token
-//      public static let SyncOperationServerToken = StitchStoreSyncOperationServerTokenKey
+      public static let SyncTokenKey = "SMStoreSyncOperationServerTokenKey"
 
       /// SetupFromBundleIDs: Metadata key showing up what bundle ID's have setup their notifications from CloudKit
       public static let SetupFromBundleIDs = "SMStoreSetupFromBundleIDs"
@@ -221,6 +221,8 @@ public class StitchStore: NSIncrementalStore {
    var nextSyncReason: SyncTriggerType = .localSave
    var recordConflictResolutionBlock: RecordResolutionBlock? = nil
    var syncOnSave: Bool = true
+
+   internal var newToken: CKServerChangeToken?
 
    var zoneID: CKRecordZone.ID = CKRecordZone.ID(zoneName: SubscriptionInfo.CustomZoneName, ownerName: CKCurrentUserDefaultName)
 
