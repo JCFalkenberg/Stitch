@@ -188,7 +188,7 @@ public class StitchStore: NSIncrementalStore {
       return type
    }()
 
-   fileprivate var operationQueue: OperationQueue = {
+   internal var operationQueue: OperationQueue = {
       let opQueue = OperationQueue()
       opQueue.maxConcurrentOperationCount = 1
       return opQueue
@@ -225,8 +225,10 @@ public class StitchStore: NSIncrementalStore {
    internal var newToken: CKServerChangeToken?
 
    var zoneID: CKRecordZone.ID = CKRecordZone.ID(zoneName: SubscriptionInfo.CustomZoneName, ownerName: CKCurrentUserDefaultName)
+   var subscriptionName: String = SubscriptionInfo.SubscriptionName
 
-   fileprivate var changedEntitesToMigrate = [String]()
+   internal var changedEntitesToMigrate = [String]()
+   var downloadingAssets = Set<String>()
 
    var excludedUnchangingAsyncAssetKeys = [String]()
    var keysToSync: [String]?
@@ -278,6 +280,9 @@ public class StitchStore: NSIncrementalStore {
       }
       if let zoneName = options?[Options.ZoneNameOption] as? String, !zoneName.isEmpty {
          zoneID = CKRecordZone.ID(zoneName: zoneName, ownerName: CKCurrentUserDefaultName)
+      }
+      if let subscription = options?[Options.SubscriptionNameOption] as? String, !subscription.isEmpty {
+         subscriptionName = subscription
       }
 
       let storeType = options?[Options.BackingStoreType] as? String ?? NSSQLiteStoreType
@@ -387,54 +392,6 @@ public class StitchStore: NSIncrementalStore {
       #endif
    }
 
-   func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
-      guard let ckNotification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
-      if ckNotification.notificationType != CKNotification.NotificationType.recordZone { return false }
-      guard let recordZoneNotification = CKRecordZoneNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
-      return recordZoneNotification.recordZoneID?.zoneName == zoneID.zoneName
-   }
-   @objc public func handlePush(userInfo: [AnyHashable: Any]) {
-      if isOurPushNotification(userInfo) {
-         triggerSync(.push)
-      }
-   }
-
-   /// triggerSync causes the database to run a sync cycle if an internet connection is available.
-   /// Can be called automatically on save if the SMStore.Options.SyncOnSave flag is set in the options dictionary to true
-   /// Will automatically queue up another sync cycle if a second call is made while a sync is in progress
-   /// If called a third or more time while in the middle of a cycle, the highest priority reason for syncing will be used for the next sync cycle
-   /// - Parameter reason: The reason for the sync, primarily used for logging and debug purposes, it is also used in the instance of SyncTriggerType. localSave to prevent a sync cycle from occuring with no queued changes.
-   public func triggerSync(_ reason: SyncTriggerType) {
-      if isSyncing {
-         if reason.rawValue < nextSyncReason.rawValue {
-            nextSyncReason = reason
-         }
-         syncAgain = true;
-         return
-      }
-      if !(connectionStatus?.internetConnectionAvailable ?? false) {
-         return
-      }
-
-      print("Syncing in response to \(reason.printName)")
-
-      /* ASSUMPTION! Bundle.main.bundleIdentifier isn't nil */
-      if let bundleIDs = metadata[Metadata.SetupFromBundleIDs] as? [String],
-         let currentBundleID = Bundle.main.bundleIdentifier,
-         bundleIDs.contains(currentBundleID)
-      {
-         syncStore(reason)
-      } else {
-         setupStore(reason)
-      }
-   }
-
-   fileprivate func syncStore(_ reason: SyncTriggerType) {
-   }
-
-   fileprivate func setupStore(_ reason: SyncTriggerType) {
-   }
-
    override public func execute(_ request: NSPersistentStoreRequest,
                                 with context: NSManagedObjectContext?) throws -> Any
    {
@@ -481,7 +438,7 @@ public class StitchStore: NSIncrementalStore {
       }
       return outwardManagedObjectIDForRecordEntity(recordID, entityName: entityName)
    }
-   fileprivate func outwardManagedObjectIDForRecordEntity(_ recordID: String,
+   internal func outwardManagedObjectIDForRecordEntity(_ recordID: String,
                                                           entityName: String) -> NSManagedObjectID
    {
       let entity = persistentStoreCoordinator!.managedObjectModel.entitiesByName[entityName]
@@ -489,7 +446,7 @@ public class StitchStore: NSIncrementalStore {
       return objectID
    }
 
-   fileprivate func objectIDForBackingObjectForEntity(_ entityName: String,
+   internal func objectIDForBackingObjectForEntity(_ entityName: String,
                                                       withReferenceObject referenceObject: String?) throws -> NSManagedObjectID?
    {
       guard let referenceObject = referenceObject else { return nil }
