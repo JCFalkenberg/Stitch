@@ -187,6 +187,113 @@ class SyncOperation: AsyncOperation {
       }
 
       // Ok, time to resolve updates
+
+      resolve(inserted: insertedOrUpdated,
+              deletedByType: deletedByType,
+              localInserted: localInsertedOrUpdated,
+              localDeleted: localDeletedIDs)
+   }
+
+   fileprivate func recordsByID(_ records: [CKRecord]) -> [CKRecord.ID: CKRecord] {
+      var recordUpdatePairs = [CKRecord.ID: CKRecord]()
+      for record in records {
+         recordUpdatePairs[record.recordID] = record
+      }
+      return recordUpdatePairs
+   }
+
+   fileprivate func unconflictedFilter(_ unconflictedIDs: Set<CKRecord.ID>,
+                                       inserted: [CKRecord.ID: CKRecord],
+                                       deleted: Set<CKRecord.ID>) -> ([CKRecord], [CKRecord.ID])
+   {
+      var resolvedUpdates = [CKRecord]()
+      var resolvedDeletedIDs = [CKRecord.ID]()
+      for unconflictedID in unconflictedIDs {
+         if let record = inserted[unconflictedID] {
+            resolvedUpdates.append(record)
+         }
+         if deleted.contains(unconflictedID) {
+            resolvedDeletedIDs.append(unconflictedID)
+         }
+      }
+      return (resolvedUpdates, resolvedDeletedIDs)
+   }
+
+   fileprivate func resolve(inserted: [CKRecord],
+                            deletedByType: [String: [CKRecord.ID]],
+                            localInserted: [CKRecord],
+                            localDeleted: [CKRecord.ID])
+   {
+      // server changes
+      let serverInsertedPairs = recordsByID(inserted)
+      let serverDeleted = Set(Array(deletedByType.values.joined()))
+      let serverChangeIDs = Set(serverInsertedPairs.keys).union(serverDeleted)
+
+      // local changes
+      let localInsertedPairs = recordsByID(localInserted)
+      let localDeleted = Set(localDeleted)
+      let localChangeIDs = Set(localInsertedPairs.keys).union(localDeleted)
+
+      // conflicted
+      let conflictIDs = localChangeIDs.intersection(serverChangeIDs)
+
+      // Server changes without conflicts
+      let serverUnconflicted = unconflictedFilter(serverChangeIDs.subtracting(localChangeIDs),
+                                                  inserted: serverInsertedPairs,
+                                                  deleted: serverDeleted)
+      var resolvedServerUpdates = serverUnconflicted.0
+      var resolvedServerDeletedIDs = serverUnconflicted.1
+
+      // Local changes without conflicts
+      let localUnconflicted = unconflictedFilter(localChangeIDs.subtracting(serverChangeIDs),
+                                                 inserted: localInsertedPairs,
+                                                 deleted: localDeleted)
+      var resolvedUpdates = localUnconflicted.0
+      var resolvedDeletedIDs = localUnconflicted.1
+
+      for conflictID in conflictIDs {
+         let localUpdatedRecord = localInsertedPairs[conflictID]
+         let serverUpdatedRecord = serverInsertedPairs[conflictID]
+
+         let localDeleted = localDeleted.contains(conflictID)
+         let serverDeleted = serverDeleted.contains(conflictID)
+
+         switch self.conflictPolicy {
+         case .clientWins:
+            // Since there is a conflict, we know either local update or delete occured
+            // as well as a server update or delete, keep the local, ignore the server
+            if localDeleted {
+               resolvedDeletedIDs.append(conflictID)
+            } else if let localUpdatedRecord = localUpdatedRecord {
+               resolvedUpdates.append(localUpdatedRecord)
+            }
+         case .serverWins:
+            // Since there is a conflict, we know either local update or delete occured
+            // as well as a server update or delete, keep the server ones, ignore the locals
+            if serverDeleted {
+               resolvedServerDeletedIDs.append(conflictID)
+            } else if let serverUpdatedRecord = serverUpdatedRecord {
+               resolvedServerUpdates.append(serverUpdatedRecord)
+            }
+         }
+      }
+
+      self.serverInsertedOrUpdated.append(contentsOf: resolvedServerUpdates)
+
+      for deletedID in resolvedServerDeletedIDs {
+         for (type, deletedIDs) in deletedByType {
+            if deletedIDs.contains(deletedID) {
+               if var deleted = self.serverDeletedRecordIDsByType[type] {
+                  deleted.append(deletedID)
+                  self.serverDeletedRecordIDsByType[type] = deleted
+               } else {
+                  self.serverDeletedRecordIDsByType[type] = [deletedID]
+               }
+            }
+         }
+      }
+
+      resolvedPushUpdates(insertedOrUpdated: resolvedUpdates, deletedIDs: resolvedDeletedIDs)
    }
 
    fileprivate func resolvedPushUpdates(insertedOrUpdated: [CKRecord],

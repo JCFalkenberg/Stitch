@@ -90,9 +90,9 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
    func testAddObject() {
       let entry = addEntryAndSave()
       XCTAssertNotNil(entry)
-      XCTAssertEqual(store?.changesCount(), 1)
+      XCTAssertEqual(store?.changesCount(context!), 1)
 
-      guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
+      guard let changeSets = store?.insertedAndUpdatedChangeSets(context!) else {
          XCTFail("Change sets should not be nil!")
          return
       }
@@ -102,7 +102,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       let text = records?.first?.value(forKey: "text") as? String
       XCTAssertNotNil(text)
       XCTAssertEqual(text, entry?.text)
-      XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
+      XCTAssertEqual(store?.deletedCKRecordIDs(context!).count, 0)
    }
 
    func testAddRelationship() {
@@ -112,7 +112,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       entry?.location = location
       save()
 
-      guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
+      guard let changeSets = store?.insertedAndUpdatedChangeSets(context!) else {
          XCTFail("Change sets should not be nil!")
          return
       }
@@ -245,8 +245,8 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       entry?.text = "be trans do crimes fk cops"
 
       save()
-      XCTAssertEqual(store?.changesCount(), 2)
-      guard let changeSets = store?.insertedAndUpdatedChangeSets() else {
+      XCTAssertEqual(store?.changesCount(context!), 2)
+      guard let changeSets = store?.insertedAndUpdatedChangeSets(context!) else {
          XCTFail("Change sets should not be nil!")
          return
       }
@@ -256,7 +256,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       let text = records?.first?.value(forKey: "text") as? String
       XCTAssertNotNil(text)
       XCTAssertEqual(text, entry?.text)
-      XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 0)
+      XCTAssertEqual(store?.deletedCKRecordIDs(context!).count, 0)
    }
 
    func testDeleteObject() {
@@ -268,7 +268,7 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       context?.delete(entry)
 
       save()
-      XCTAssertEqual(store?.changesCount(), 2)
-      XCTAssertEqual(store?.deletedCKRecordIDs()?.count, 1)
+      XCTAssertEqual(store?.changesCount(context!), 2)
+      XCTAssertEqual(store?.deletedCKRecordIDs(context!).count, 1)
    }
 }
