@@ -322,12 +322,12 @@ class SyncOperation: AsyncOperation {
    }
 
    fileprivate func insertOrUpdateManagedObjects() throws {
-//      if serverInsertedOrUpdated.count > 0 {
-//         let insertedOrUpdated = try serverInsertedOrUpdated.insertOrUpdate(into: backingContext)
-//
-//         self.added.append(contentsOf: insertedOrUpdated.added)
-//         self.updated.append(contentsOf: insertedOrUpdated.updated)
-//      }
+      if serverInsertedOrUpdated.count > 0 {
+         let insertedOrUpdated = try serverInsertedOrUpdated.insertOrUpdate(into: syncContext)
+
+         self.added.append(contentsOf: insertedOrUpdated.added)
+         self.updated.append(contentsOf: insertedOrUpdated.updated)
+      }
    }
 
    fileprivate func deleteManagedObjects() throws {

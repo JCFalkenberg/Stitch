@@ -8,6 +8,10 @@
 import CoreData
 
 extension NSManagedObjectContext {
+   var entitiesByName: [String: NSEntityDescription]? {
+      return persistentStoreCoordinator?.managedObjectModel.entitiesByName
+   }
+
    func saveIfHasChanges() throws {
       if self.hasChanges {
          try self.save()
