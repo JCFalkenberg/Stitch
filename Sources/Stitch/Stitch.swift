@@ -119,6 +119,7 @@ public class StitchStore: NSIncrementalStore {
    /// The backing store is passed the options dictionary as well, so other keys may work
    public struct Options {
       /// FetchRequestPredicateReplacement: NSNumber boolean that enables use of %@ options in NSFetchRequest's NSPredicate.
+      /// FetchRequest preidcate replacement option. Requires objects to be replaced be saved prior to replacing them, otherwise errors will be thrown.
       /// Defaults to false
       public static let FetchRequestPredicateReplacement = StitchStoreFetchRequestPredicateReplacementExperiment
       /// SyncConflictResolutionPolicy is an NSNumber of the raw value of one of the options in StitchStore.ConflictPolicy.

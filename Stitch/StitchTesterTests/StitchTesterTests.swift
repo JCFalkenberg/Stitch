@@ -156,6 +156,39 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       }
    }
 
+   func testReplacement() {
+      guard let store = store else {
+         XCTFail("No store!")
+         return
+      }
+
+      guard let entry = addEntryAndSave() else {
+         XCTFail("No entry!")
+         return
+      }
+      let predicate = NSPredicate(format: "location == %@", entry)
+
+      do {
+         let replacedPredicate: NSPredicate? = try (predicate.copy() as! NSPredicate).predicateByReplacingManagedObjects(using: store)
+         XCTAssert(replacedPredicate?.isKind(of: NSComparisonPredicate.self) ?? false)
+         if let replacedPredicate = replacedPredicate as? NSComparisonPredicate {
+            XCTAssertEqual(replacedPredicate.rightExpression.expressionType, .constantValue)
+            XCTAssert(replacedPredicate.rightExpression.constantValue is NSManagedObject)
+            if let object = replacedPredicate.rightExpression.constantValue as? NSManagedObject {
+               XCTAssertEqual(object.entityName, "Entry")
+               XCTAssertEqual(object.entity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))
+               XCTAssertNotNil(object[StitchStore.BackingModelNames.RecordIDAttribute])
+            } else {
+               XCTFail("Invalid object")
+            }
+         } else {
+            XCTFail("Invalid predicate")
+         }
+      } catch {
+         XCTFail("Error replacing predicate. \(error)")
+      }
+   }
+
    func testFetchReplacement() {
       let entry = addEntryAndSave()
       guard let location = addLocationAndSave() else {
