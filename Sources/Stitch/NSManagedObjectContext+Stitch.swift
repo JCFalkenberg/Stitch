@@ -32,4 +32,90 @@ extension NSManagedObjectContext {
          throw caughtError
       }
    }
+
+   class BatchUpdateResult: NSBatchUpdateResult {
+      var theResult: Any? = nil
+      var theType: NSBatchUpdateRequestResultType
+      override var result: Any? { return theResult }
+      override var resultType: NSBatchUpdateRequestResultType { return theType }
+
+      init(type: NSBatchUpdateRequestResultType) {
+         self.theType = type
+      }
+   }
+
+   class BatchDeleteResult: NSBatchDeleteResult {
+      var theResult: Any? = nil
+      var theType: NSBatchDeleteRequestResultType
+      override var result: Any? { return theResult }
+      override var resultType: NSBatchDeleteRequestResultType { return theType }
+
+      init(type: NSBatchDeleteRequestResultType) {
+         self.theType = type
+      }
+   }
+
+
+   func executeBatch(_ request: NSPersistentStoreRequest) throws -> NSPersistentStoreResult {
+      var hasOnlySQLiteStores = true
+      for store in persistentStoreCoordinator?.persistentStores ?? [] {
+         if store.type != NSSQLiteStoreType { hasOnlySQLiteStores = false }
+      }
+      if hasOnlySQLiteStores {
+         return try execute(request)
+      } else if let batchUpdateRequest = request as? NSBatchUpdateRequest {
+         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: batchUpdateRequest.entityName)
+         fetchRequest.predicate = batchUpdateRequest.predicate
+
+         let objectsToChange = try fetch(fetchRequest)
+
+         for object in objectsToChange {
+            for (key, value) in batchUpdateRequest.propertiesToUpdate ?? [:] {
+               if let key = key as? String {
+                  object[key] = value
+               }
+               if let key = key as? NSAttributeDescription {
+                  object[key.name] = (value as? NSExpression)?.constantValue
+               }
+            }
+         }
+         let result = BatchUpdateResult(type: batchUpdateRequest.resultType)
+
+         switch batchUpdateRequest.resultType {
+         case .statusOnlyResultType:
+            result.theResult = true
+         case .updatedObjectIDsResultType:
+            result.theResult = objectsToChange.map { $0.objectID }
+         case .updatedObjectsCountResultType:
+            result.theResult = objectsToChange
+         @unknown default:
+            throw StitchStore.StitchStoreError.invalidRequest
+         }
+         return result
+      } else if let batchDeleteRequest = request as? NSBatchDeleteRequest {
+         guard let objectsToDelete = try fetch(batchDeleteRequest.fetchRequest) as? [NSManagedObject] else {
+            throw StitchStore.StitchStoreError.invalidRequest
+         }
+         let deletedIDs = objectsToDelete.map { $0.objectID }
+         for object in objectsToDelete {
+            self.delete(object)
+         }
+
+         let result = BatchDeleteResult(type: batchDeleteRequest.resultType)
+
+         switch batchDeleteRequest.resultType {
+         case .resultTypeStatusOnly:
+            result.theResult = true
+         case .resultTypeObjectIDs:
+            result.theResult = deletedIDs
+         case .resultTypeCount:
+            result.theResult = objectsToDelete.count
+         @unknown default:
+            throw StitchStore.StitchStoreError.invalidRequest
+         }
+         return result
+      }
+
+      throw StitchStore.StitchStoreError.invalidRequest
+   }
 }

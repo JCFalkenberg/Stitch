@@ -264,4 +264,20 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(store?.changesCount(store!.backingMOC), 2)
       XCTAssertEqual(store?.deletedCKRecordIDs(store!.backingMOC).count, 1)
    }
+
+   func testQueueChanges() {
+      _ = addEntryAndSave()
+
+      XCTAssertEqual(store?.changesCount(store!.backingMOC), 1)
+      store?.queueAllChangeSets(store!.backingMOC)
+      XCTAssertEqual(store?.insertedAndUpdatedCKRecords(store!.backingMOC).count, 0)
+      store?.dequeueAllChangeSets(store!.backingMOC)
+      XCTAssertEqual(store?.insertedAndUpdatedCKRecords(store!.backingMOC).count, 1)
+      store?.queueAllChangeSets(store!.backingMOC)
+      XCTAssertEqual(store?.insertedAndUpdatedCKRecords(store!.backingMOC).count, 0)
+      store?.removeAllQueuedChangeSets(store!.backingMOC)
+      XCTAssertEqual(store?.changesCount(store!.backingMOC), 0)
+      _ = addLocationAndSave()
+      XCTAssertEqual(store?.changesCount(store!.backingMOC), 1)
+   }
 }
