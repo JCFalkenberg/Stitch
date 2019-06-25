@@ -93,12 +93,18 @@ extension NSManagedObjectContext {
          }
          return result
       } else if let batchDeleteRequest = request as? NSBatchDeleteRequest {
-         guard let objectsToDelete = try fetch(batchDeleteRequest.fetchRequest) as? [NSManagedObject] else {
-            throw StitchStore.StitchStoreError.invalidRequest
-         }
-         let deletedIDs = objectsToDelete.map { $0.objectID }
+         let objectsToDelete = try fetch(batchDeleteRequest.fetchRequest)
+         var objectIDs = [NSManagedObjectID]()
          for object in objectsToDelete {
-            self.delete(object)
+            if let object = object as? NSManagedObject {
+               delete(object)
+               objectIDs.append(object.objectID)
+            }
+            if let id = object as? NSManagedObjectID {
+               let object = self.object(with: id)
+               delete(object)
+               objectIDs.append(id)
+            }
          }
 
          let result = BatchDeleteResult(type: batchDeleteRequest.resultType)
@@ -107,7 +113,7 @@ extension NSManagedObjectContext {
          case .resultTypeStatusOnly:
             result.theResult = true
          case .resultTypeObjectIDs:
-            result.theResult = deletedIDs
+            result.theResult = objectIDs
          case .resultTypeCount:
             result.theResult = objectsToDelete.count
          @unknown default:
