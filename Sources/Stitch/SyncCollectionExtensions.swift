@@ -47,27 +47,27 @@ extension Collection where Element == CKRecord {
 extension Dictionary where Key == String, Value == [CKRecord.ID] {
    func deleteRecords(in context: NSManagedObjectContext) throws -> [(recordID: String, entityName: String)] {
       var removed = [(recordID: String, entityName: String)]()
-//      let predicate = NSPredicate(format: "%K IN $ckRecordIDs", SMLocalStoreRecordIDAttributeName)
-//      context.performAndWait({ () -> Void in
-//         do {
-//            for (type, recordIDs) in self {
-//               let ckRecordIDStrings = recordIDs.map( { (object) -> String in
-//                  let ckRecordID : CKRecord.ID = object
-//                  return ckRecordID.recordName
-//               })
-//               let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: type)
-//               fetchRequest.predicate = predicate.withSubstitutionVariables(["ckRecordIDs":ckRecordIDStrings])
-//               let results = try context.fetch(fetchRequest)
-//               for object in results {
-//                  removed.append((recordID: object.value(forKey: SMLocalStoreRecordIDAttributeName) as! String, entityName: type))
-//                  context.delete(object)
-//               }
-//            }
-//         } catch {
-//            print("error deleting managed objects")
-//         }
-//      })
-//      context.saveInBlockIfHasChanges()
+      let predicate = NSPredicate(format: "%K IN $ckRecordIDs", StitchStore.BackingModelNames.RecordIDAttribute)
+      context.performAndWait({ () -> Void in
+         do {
+            for (type, recordIDs) in self {
+               let ckRecordIDStrings = recordIDs.map( { (object) -> String in
+                  let ckRecordID : CKRecord.ID = object
+                  return ckRecordID.recordName
+               })
+               let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: type)
+               fetchRequest.predicate = predicate.withSubstitutionVariables(["ckRecordIDs":ckRecordIDStrings])
+               let results = try context.fetch(fetchRequest)
+               for object in results {
+                  removed.append((recordID: object.value(forKey: StitchStore.BackingModelNames.RecordIDAttribute) as! String, entityName: type))
+                  context.delete(object)
+               }
+            }
+         } catch {
+            print("error deleting managed objects")
+         }
+      })
+      try? context.saveInBlockIfHasChanges()
       return removed
    }
 }

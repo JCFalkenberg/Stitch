@@ -65,10 +65,9 @@ extension StitchStore {
             self.informSyncFinished(added: syncedObjects.added,
                                     removed: syncedObjects.removed,
                                     updated: syncedObjects.updated)
-         case .failure(let error):
-            if let error = error as? NSError,
-               error.domain == CKErrorDomain &&
-                  error.code == CKError.changeTokenExpired.rawValue
+         case .failure(let error as NSError):
+            if error.domain == CKErrorDomain &&
+               error.code == CKError.changeTokenExpired.rawValue
             {
                DispatchQueue.main.async {
                   self.deleteToken()
@@ -190,27 +189,27 @@ extension StitchStore {
    }
 
    internal func redownloadObjectsForMigratedEnttiies() {
-//      let operation = MigrationDownloadOperation(changed: changedEntitesToMigrate,
-//                                                 keysToSync: keysToSync,
-//                                                 database: database,
-//                                                 context: backingMOC)
-//      { (added, updated, error) in
-//         if let error = error {
-//            print("error downloading migrated objects! \(error)")
-//         } else {
-//            /* if no error, remove the need to redo this from meta data */
-//            informSyncFinished(added: added,
-//                                    removed: [],
-//                                    updated: updated)
-//            DispatchQueue.main.async {
-//               changedEntitesToMigrate.removeAll()
-//               setMetadata(nil, key: SMStoreChangedEntitiesToMigrate)
-//               checkSyncAgain()
-//            }
-//         }
-//      }
+      let operation = MigrationDownloadOperation(changed: changedEntitesToMigrate,
+                                                 keysToSync: keysToSync,
+                                                 database: database,
+                                                 context: backingMOC)
+      { (added, updated, error) in
+         if let error = error {
+            print("error downloading migrated objects! \(error)")
+         } else {
+            /* if no error, remove the need to redo this from meta data */
+            self.informSyncFinished(added: added,
+                                    removed: [],
+                                    updated: updated)
+            DispatchQueue.main.async {
+               self.changedEntitesToMigrate.removeAll()
+               self.setMetadata(nil, key: StitchStore.Metadata.ChangedEntitiesToMigrate)
+               self.checkSyncAgain()
+            }
+         }
+      }
 
-//      operationQueue.addOperation(operation)
+      operationQueue.addOperation(operation)
    }
 
    fileprivate func downloadBackingRecordsForReferences(_ referencesByType: [String: [String]]) {
@@ -218,29 +217,30 @@ extension StitchStore {
          return
       }
 
-//      guard let database = database else { return }
+      guard let database = database else { return }
 
-//      let operations = CKFetchRecordsOperation.operationsToDownloadFullRecords(context: backingMOC,
-//                                                                               for: referencesByType,
-//                                                                               database: database)
-//      { (recordIDs, finished) in
-//         for outwardID in recordIDs {
-//            if let backingReference = referenceObject(for: outwardManagedObjectID(outwardID)) as? String {
-//               downloadingAssets.remove(backingReference)
-//            }
-//         }
-//
-//         informSyncFinished(added: recordIDs,
-//                                 removed: [],
-//                                 updated: [])
-//
-//         if finished {
-//            DispatchQueue.main.async {
-//               checkSyncAgain()
-//            }
-//         }
-//      }
-//      operationQueue.addOperations(operations, waitUntilFinished: false)
+      let operations = CKFetchRecordsOperation.operationsToDownloadFullRecords(context: backingMOC,
+                                                                               for: referencesByType,
+                                                                               database: database,
+                                                                               zone: zoneID)
+      { (recordIDs, finished) in
+         for outwardID in recordIDs {
+            if let backingReference = self.referenceObject(for: self.outwardManagedObjectID(outwardID)) as? String {
+               self.downloadingAssets.remove(backingReference)
+            }
+         }
+
+         self.informSyncFinished(added: recordIDs,
+                                 removed: [],
+                                 updated: [])
+
+         if finished {
+            DispatchQueue.main.async {
+               self.checkSyncAgain()
+            }
+         }
+      }
+      operationQueue.addOperations(operations, waitUntilFinished: false)
    }
 
    fileprivate func informSyncFinished(added: [NSManagedObjectID],
