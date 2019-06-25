@@ -18,7 +18,7 @@ Stitch like it's namesake has some prickly parts to be aware of right off the ba
 * When sync finishes, you must integrate those changes in to your UI.
 * Conflict resolution has been simplified to either server or local record wins.
 
-It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense
+It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense (for instance I do plan on adding support for batch operations)
 
 ## What does it do then?
 
@@ -31,6 +31,7 @@ So after seeing that scary list of sharp points, what does Stitch have to offer?
 * Syncing can happen automatically on save
 * Store sets up CloudKit database zone, and subscription automatically
 * Customizable CloudKit database identifier, zone and subscription names
+* Cross Apple device, it supports macOS, iOS and tvOS, and will possibly support watchOS 6.
 
 ## CoreData to CloudKit
 
@@ -54,61 +55,96 @@ So after seeing that scary list of sharp points, what does Stitch have to offer?
 
 | CoreData Relationship  | Translation on CloudKit |
 | ------------- | ------------- |
-| To - one    | To one relationships are translated as CKReferences on the CloudKit Servers. |
-| To - many    | To many relationships are not explicitly created. Stitch only creates and manages to-one relationships on the CloudKit Servers. <br/> <strong>Example</strong> -> If an Employee has a to-one relationship to Department and Department has a to-many relationship to Employee than Stitch will only create the former on the CloudKit Servers. It will fullfil the later by using the to-one relationship. If all employees of a department are accessed Stitch will fulfil it by fetching all the employees that belong to that particular department.|
+| To - one | To one relationships are translated as CKReferences in the CloudKit Container. |
+| To - many | To many relationships are not explicitly created, Stitch only creates and manages to-one relationships in CloudKit and then translates those back when syncing down.<br/><strong>Example</strong> -> If an Employee has a to-one relationship to Department and Department has a to-many relationship to Employee than Stitch will only link the employee to the department in CloudKit. During sync, it translates these back in the local store |
+| many - many | Stitch does not support these directly. You can create them though using a [linking table](https://en.wikipedia.org/wiki/Associative_entity) |
 
 <strong>Note :</strong> You must create inverse relationships in your app's CoreData Model or Stitch won't be able to translate CoreData Models in to CloudKit Records. Unexpected errors and curroption of data can possibly occur.
 
 ## Sync
 
 Stitch keeps the CoreData store in sync with the CloudKit Servers.
-After a sync completes, you must integrate the changes in to your UI.
+
+After a sync completes, you must integrate the changes in to your UI. More on this to come.
 
 #### Conflict Resolution Policies
-In case of any sync conflicts, Stitch exposes 2 conflict resolution policies.
+In case of any sync conflicts, Stitch exposes 2 conflict resolution policies. Defined in `StitchStore.ConflictPolicy`
 
-- ServerRecordWins
-
-This is the default. It considers the server record as the true record.
-
-- ClientRecordWins
-
-This considers the client record as the true record.
+- `serverWins` - This is the default. It considers the server record as the true record.
+- `clientWins` - This considers the client record as the true record.
 
 ## How to use
 
-- Declare a SMStore type property in the class where your CoreData stack resides.
-```swift
-var smStore: StitchStore?
-```
 - Add a store type of `StitchStore.storeType` to your app's NSPersistentStoreCoordinator and assign it to the property created in the previous step.
+- Pass in an appropriate options dictionary,
 ```swift
-do 
-{
-self.smStore = try coordinator.addPersistentStoreWithType(StitchStore.storeType, configuration: nil, URL: url, options: nil) as? StitchStore
+do {
+   let store  = try coordinator.addPersistentStoreWithType(StitchStore.storeType,
+                                                           configuration: nil,
+                                                           URL: url,
+                                                           options: options) as? StitchStore
+} catch {
+   print("There was an error adding the store! \(error)")
 }
 ```
 - Enable Push Notifications for your app.
+- Register for push notifications somewhere, such as applicationDidFinishLaunching
+- iOS:
+```swift
+UIApplication.shared.registerForRemoteNotifications()
+```
+- macOS:
+```swift
+NSApp.registerForRemoteNotifications(matching: .alert)
+```
 
 - Implement didReceiveRemoteNotification Method in your AppDelegate and call `handlePush` on the instance of SMStore created earlier.
 ```swift
 func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) 
 {
-self.smStore?.handlePush(userInfo: userInfo)
+   self.smStore?.handlePush(userInfo: userInfo)
 }
 ```
 - Enjoy
 
 ## Options 
 
-- StitchStoreSyncConflictResolutionPolicy
+Defined in `StitchStore.Options`
 
-Use StitchSyncConflictResolutionPolicy enum to use as a value for this option to specify the desired conflict resolution policy when adding StitchStoreType to your app's NSPersistentStoreCoordinator.
+* `FetchRequestPredicateReplacement` NSNumber boolean that enables replacement of NSManagedObjects in NSPredicates on NSFetchRequests.
+defaults to false
+FetchRequest preidcate replacement option. Requires objects to be replaced be saved prior to replacing them, otherwise errors will be thrown.
+Supports replacing managed objects in: "keyPath == %@", "keyPath in %@" and "%@ contains %@" predicates, as well as compound predicates with those as sub predicates.
+
+* `SyncConflictResolutionPolicy` is an NSNumber of the raw value of one of the options in StitchStore.ConflictPolicy.
+Defaults to `StitchStore.ConflictPolicy.serverWins`
+
+* `CloudKitContainerIdentifier` is a String identifying which CloudKit container ID to use if your app uses an identifier which does not match your Bundle ID.
+Defaults to using `CKContainer.default().privateCloudDatabase`
+
+* `ConnectionStatusDelegate` an object which conforms to StitchConnectionStatus for asking whether we have an internet connection at the moment
+
+* `ExcludedUnchangingAsyncAssetKeys` is an array of Strings which indicate keys which should not be synced down during the main cycle due to being a large CKAsset
+Syncing down can be done later on request or demand based on application need
+Your asset containing properties should not overlap in name with other keys you want synced down to use this
+Defaults to `nil`
+
+* `BackingStoreType` is a string which defines what type of backing store is to be used. Defaults to NSSQLiteStoreType and testing is done against this type. Other stores may have issues.
+
+* `SyncOnSave` an NSNumber boolean value for whether to automatically sync when the database is told to save.
+Defaults to `true`.
+
+* `ZoneNameOption` Lets you specify a string to use as the CloudKitZone ID name
+Defaults to `StitchStore.SubscriptionInfo.CustomZoneName`
+
+* `SubscriptionNameOption` Lets you specify a string to use as the CloudKit subscription name ID
+Defaults to `StitchStore.SubscriptionInfo.SubscriptioName`
+
 ## Requirements
 
 Xcode 11
 
-Swift 5.0
+Swift 5.1
 
 ## Support
 
