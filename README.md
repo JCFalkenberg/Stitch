@@ -2,6 +2,8 @@
 
 ### Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
 
+## This is a work in progress alpha. It builds, it has some tests for the non syncing portions of the code.
+
 ## Warnings
 Stitch like it's namesake has some prickly parts to be aware of right off the bat. 
 * It doesn't suport public CloudKit databases.
@@ -24,7 +26,7 @@ So after seeing that scary list of sharp points, what does Stitch have to offer?
 * Complete local cache, the store is fully usable offline, and changes will be queued for the next time the user connects to a network with the app open.
 * Assets/External Data can be downloaded separately from the text data, either on demand or just as a separate sync phase (for instance, you can implement a download all assets when on wifi)
 * Stitch supports both adding new entities and new fields to the database. Keep in mind that older versions of your app won't see the new properties until the user updates. Keep this in mind when designing your database.
-* It does support as best it can, *most* NSSQLiteStore features, as the default local backing store is an NSSQLiteStore
+* It does support as best it can, a lot of NSSQLiteStore features, as the default local backing store is an NSSQLiteStore
 * It does allow for other backing store types, although some may have some issues vs NSSQLiteStore
 * Syncing can happen automatically on save
 * Store sets up CloudKit database zone, and subscription automatically
@@ -36,7 +38,7 @@ So after seeing that scary list of sharp points, what does Stitch have to offer?
 
 | CoreData  | CloudKit |
 | ------------- | ------------- |
-| Date    | Date/Time |
+| Date | Date/Time |
 | Data | Bytes | 
 | External Stored Data | CKAsset |
 | String  | String  |
@@ -114,10 +116,10 @@ Swift 5.0
 
 
 ## Installation
-Simply add the git url to Swift Package Manager in Xcode 11 
+Simply add the git url to Swift Package Manager in Xcode 11
 
 ## Credits
-Stitch was created by [Elizabeth Siemer](https://twitter.com/_woebetide_), originally modified from [Seam](https://github.com/) by [Nofel Mahmood](https://twitter.com/NofelMahmood) but it has been nearly completely rewritten.
+Stitch was created by [Elizabeth Siemer](https://twitter.com/_woebetide_), based on a heavily modified by me fork of [Seam](https://github.com/nofelmahmood/Seam) by [Nofel Mahmood](https://twitter.com/NofelMahmood) but it has been nearly completely rewritten.
 
 ## Contact 
 Follow Elizabeth on [Twitter](http://twitter.com/_woebetide) and [GitHub](http://github.com/nofelmahmood) or email her at elizabeth@darkchocolatesoftware.com
