@@ -59,7 +59,7 @@ extension Dictionary where Key == String, Value == [CKRecord.ID] {
                fetchRequest.predicate = predicate.withSubstitutionVariables(["ckRecordIDs":ckRecordIDStrings])
                let results = try context.fetch(fetchRequest)
                for object in results {
-                  guard let recordID = object[StitchStore.BackingModelNames.RecordIDAttribute] as? String else { conttinue }
+                  guard let recordID = object[StitchStore.BackingModelNames.RecordIDAttribute] as? String else { continue }
                   removed.append((recordID: recordID, entityName: type))
                   context.delete(object)
                }
