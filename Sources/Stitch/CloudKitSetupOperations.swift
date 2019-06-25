@@ -28,7 +28,7 @@ public extension CKModifySubscriptionsOperation {
       self.init(subscriptionsToSave: [subscription], subscriptionIDsToDelete: nil)
       self.database = database
       self.qualityOfService = .userInitiated;
-      self.modifySubscriptionsCompletionBlock = { (modified, created, operationError) -> Void in
+      self.modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
          if let error = operationError {
             completion(.failure(error))
          } else {
@@ -44,7 +44,7 @@ public extension CKModifySubscriptionsOperation {
       self.init(subscriptionsToSave: nil, subscriptionIDsToDelete: [zoneID])
       self.database = database
       self.qualityOfService = .userInitiated
-      self.modifySubscriptionsCompletionBlock = { (modified, created, operationError) -> Void in
+      self.modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
          if let error = operationError {
             completion(.failure(error))
          } else {
@@ -63,7 +63,7 @@ public extension CKModifyRecordZonesOperation {
       self.init(recordZonesToSave: [recordZone], recordZoneIDsToDelete: nil)
       self.database = database
       self.qualityOfService = .userInitiated;
-      self.modifyRecordZonesCompletionBlock = { (savedRecordZones, deletedRecordZonesIDs, operationError) -> Void in
+      self.modifyRecordZonesCompletionBlock = { (savedRecordZones, deletedRecordZonesIDs, operationError) in
          if let error = operationError {
             setupCompletion(.failure(error))
          } else {
@@ -79,7 +79,7 @@ public extension CKModifyRecordZonesOperation {
       self.init(recordZonesToSave: nil, recordZoneIDsToDelete: [recordZone.zoneID])
       self.database = database
       self.qualityOfService = .userInitiated
-      self.modifyRecordZonesCompletionBlock = { (savedRecordZones, deletedRecordZonesIDs, operationError) -> Void in
+      self.modifyRecordZonesCompletionBlock = { (savedRecordZones, deletedRecordZonesIDs, operationError) in
          if let error = operationError {
             setupCompletion(.failure(error))
          } else {

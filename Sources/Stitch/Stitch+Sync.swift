@@ -56,42 +56,35 @@ extension StitchStore {
       backingMOC.performAndWait {
          backingMOC.reset()
       }
-//      let syncMachine = SyncingMachine(parentContext: backingMOC,
-//                                       tokenHandler: tokenHandler,
-//                                       keysToSync: keysToSync,
-//                                       conflictPolicy: cksStoresSyncConflictPolicy,
-//                                       reason: reason,
-//                                       database: database,
-//                                       zoneName: SMStoreCloudStoreCustomZoneName)
-//      { (added, removed, updated, error) in
-//         if let error = error as NSError? {
-//            if error.domain == CKErrorDomain &&
-//               error.code == CKError.changeTokenExpired.rawValue
-//            {
-//               print("Sync token out of date, delete and retry sync");
-//               //Delete our token and retry sync
-//               tokenHandler.deleteToken()
-//               DispatchQueue.main.async(execute: { () -> Void in
-//                  triggerSync(reason);
-//               });
-//            } else {
-//               print("Sync failed")
-//               DispatchQueue.main.async { () -> Void in
-//                  NotificationCenter.default.post(name: Notifications.DidFailSync, object: self, userInfo: error.userInfo)
-//               }
-//            }
-//         } else {
-//            setMetadata(Date() as AnyObject?, key: SMStoreLastSyncCompletedKey)
-//            print("Sync Performed Successfully")
-//            informSyncFinished(added: added,
-//                                    removed: removed,
-//                                    updated: updated)
-//         }
-//         DispatchQueue.global(qos: .default).async {
-//            checkSyncAgain()
-//         }
-//      }
-//      operationQueue.addOperation(syncMachine)
+      let syncOperation = SyncOperation(store: self,
+                                        reason: reason)
+      { (result) in
+         switch result {
+         case .success(let syncedObjects):
+            self.setMetadata(Date(), key: Metadata.LastSyncCompleted)
+            self.informSyncFinished(added: syncedObjects.added,
+                                    removed: syncedObjects.removed,
+                                    updated: syncedObjects.updated)
+         case .failure(let error):
+            if let error = error as? NSError,
+               error.domain == CKErrorDomain &&
+                  error.code == CKError.changeTokenExpired.rawValue
+            {
+               DispatchQueue.main.async {
+                  self.deleteToken()
+                  self.triggerSync(reason)
+               }
+            } else {
+               DispatchQueue.main.async { () -> Void in
+                  NotificationCenter.default.post(name: Notifications.DidFailSync, object: self, userInfo: nil)
+               }
+            }
+         }
+         DispatchQueue.main.async {
+            self.checkSyncAgain()
+         }
+      }
+      operationQueue.addOperation(syncOperation)
 
       DispatchQueue.main.async { () -> Void in
          NotificationCenter.default.post(name: Notifications.DidStartSync, object: self)

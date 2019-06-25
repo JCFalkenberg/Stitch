@@ -110,5 +110,33 @@ extension StitchStore {
       }
       return recordIDs
    }
+
+   func queueAllChangeSets(_ context: NSManagedObjectContext) {
+      context.performAndWait {
+         let update = NSBatchUpdateRequest(entity: ChangeSet.entity())
+         update.propertiesToUpdate = [StitchStore.BackingModelNames.ChangeQueuedAttribute: true]
+         _ = try? context.execute(update)
+         try? context.saveIfHasChanges()
+      }
+   }
+   
+   func dequeueAllChangeSets(_ context: NSManagedObjectContext) {
+      context.performAndWait {
+         let update = NSBatchUpdateRequest(entity: ChangeSet.entity())
+         update.propertiesToUpdate = [StitchStore.BackingModelNames.ChangeQueuedAttribute: false]
+         _ = try? context.execute(update)
+         try? context.saveIfHasChanges()
+      }
+   }
+
+   func removeAllQueuedChangeSets(_ context: NSManagedObjectContext) {
+      context.performAndWait {
+         let request = ChangeSet.fetchRequest()
+         request.predicate = NSPredicate(format: "%K == %@",
+                                         StitchStore.BackingModelNames.ChangeQueuedAttribute,
+                                         NSNumber(value: true))
+         _ = try? context.execute(NSBatchDeleteRequest(fetchRequest: request))
+      }
+   }
 }
 
