@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B930847622C2C3CA0099E0A7 /* StitchCloudKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */; };
 		B9C7571222BC802A0086163A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C7571122BC802A0086163A /* AppDelegate.swift */; };
 		B9C7571422BC802C0086163A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9C7571322BC802C0086163A /* Assets.xcassets */; };
 		B9C7571722BC802C0086163A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9C7571522BC802C0086163A /* Main.storyboard */; };
@@ -41,6 +42,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchCloudKitTests.swift; sourceTree = "<group>"; };
 		B9C7570E22BC802A0086163A /* StitchTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StitchTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C7571122BC802A0086163A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B9C7571322BC802C0086163A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 			children = (
 				B9D748F422BC8C420058EDB9 /* StitchTesterTests.swift */,
 				B9F67BD822BCA5860092EEF1 /* StitchTests.swift */,
+				B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */,
 				B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */,
 				B9D748F622BC8C420058EDB9 /* Info.plist */,
 			);
@@ -240,6 +243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B9CDF08422BD18F5004A52D3 /* TestModel.xcdatamodeld in Sources */,
+				B930847622C2C3CA0099E0A7 /* StitchCloudKitTests.swift in Sources */,
 				B9F67BD922BCA5860092EEF1 /* StitchTests.swift in Sources */,
 				B9D748F522BC8C420058EDB9 /* StitchTesterTests.swift in Sources */,
 			);
