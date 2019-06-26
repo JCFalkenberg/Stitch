@@ -1,4 +1,5 @@
 # Stitch, a CoreData to CloudKit sync library
+![](https://raw.githubusercontent.com/JCFalkenberg/Stitch/master/Assets/Stitch.png)
 
 ### Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
 
