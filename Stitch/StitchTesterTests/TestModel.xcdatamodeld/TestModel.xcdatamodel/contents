@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14838.19" systemVersion="18F132" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="NO" userDefinedModelVersionIdentifier="">
+    <entity name="AllTypes" representedClassName="AllTypes" syncable="YES" codeGenerationType="class">
+        <attribute name="binaryData" optional="YES" attributeType="Binary"/>
+        <attribute name="boolean" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="decimal" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="double" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="externalData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="float" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="int16" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="int32" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="int64" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="string" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="Book" representedClassName="Book" syncable="YES" codeGenerationType="class">
         <attribute name="bookName" optional="YES" attributeType="String"/>
         <relationship name="recipes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Recipe" inverseName="books" inverseEntity="Recipe"/>
@@ -39,8 +52,10 @@
         <memberEntity name="EntryTagLink"/>
         <memberEntity name="Tag"/>
         <memberEntity name="Location"/>
+        <memberEntity name="AllTypes"/>
     </configuration>
     <elements>
+        <element name="AllTypes" positionX="-230.6328125" positionY="-20.72265625" width="128" height="208"/>
         <element name="Book" positionX="258.9453125" positionY="216.90625" width="128" height="73"/>
         <element name="Entry" positionX="-63" positionY="-18" width="128" height="88"/>
         <element name="EntryTagLink" positionX="144" positionY="18" width="128" height="73"/>

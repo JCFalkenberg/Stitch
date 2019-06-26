@@ -457,4 +457,16 @@ public class StitchStore: NSIncrementalStore {
       let results = try backingMOC.fetch(fetchRequest)
       return results.last
    }
+
+   func backingObject(for outward: NSManagedObject) throws -> NSManagedObject {
+      try outward.managedObjectContext?.obtainPermanentIDs(for: [outward])
+      guard let reference = referenceObject(for: outward.objectID) as? String else { throw StitchStore.StitchStoreError.invalidReferenceObject }
+      guard let backing = backingObject(for: reference, entity: outward.entityName) else { throw StitchStore.StitchStoreError.invalidReferenceObject }
+      return backing
+   }
+
+   public func ckRecordForOutwardObject(_ outwardObject: NSManagedObject) throws -> CKRecord? {
+      let backing = try backingObject(for: outwardObject)
+      return backing.updatedCKRecord(zone: zoneID)
+   }
 }

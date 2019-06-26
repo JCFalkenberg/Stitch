@@ -66,7 +66,7 @@ final class StitchTests: XCTestCase {
       XCTAssert(model.configurations.contains("PF_DEFAULT_CONFIGURATION_NAME"))
       XCTAssert(model.configurations.contains("Success"))
       XCTAssert(model.configurations.contains("Failure"))
-      XCTAssertEqual(model.entities.count, 7)
+      XCTAssertEqual(model.entities.count, 8)
    }
 
    func validateAttribute(named: String) -> Bool {
@@ -107,12 +107,12 @@ final class StitchTests: XCTestCase {
       let backingModel = model.copyStichBackingModel(for: "Success")
 
       //Make sure our outward model is ok still
-      XCTAssertEqual(model.entities.count, 7)
+      XCTAssertEqual(model.entities.count, 8)
       XCTAssertEqual(entity?.managedObjectClassName, NSStringFromClass(Entry.self))
       XCTAssertNil(entity?.attributesByName[StitchStore.BackingModelNames.RecordIDAttribute])
       XCTAssertNil(entity?.attributesByName[StitchStore.BackingModelNames.RecordEncodedAttribute])
 
-      XCTAssertEqual(backingModel.entities.count, 8)
+      XCTAssertEqual(backingModel.entities.count, 9)
       let backingEntity = backingModel.entitiesByName[NSStringFromClass(Entry.self)]!
       XCTAssertNotNil(backingEntity)
       XCTAssertEqual(backingEntity.managedObjectClassName, NSStringFromClass(NSManagedObject.self))

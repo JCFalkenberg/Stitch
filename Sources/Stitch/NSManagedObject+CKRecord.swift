@@ -104,10 +104,10 @@ extension NSManagedObject {
       if let encoded = encoded {
          record = CKRecord(with: encoded)
       }
-      if record == nil {
-         if let recordID = ckRecordID(zone: zone) {
-            record = CKRecord(recordType: self.entity.name!, recordID: recordID)
-         }
+      if record == nil,
+         let recordID = ckRecordID(zone: zone)
+      {
+         record = CKRecord(recordType: self.entityName, recordID: recordID)
       }
       guard let ckRecord = record else { return nil }
       var attributeKeys: [String]? = nil

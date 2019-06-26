@@ -8,6 +8,7 @@
 
 import XCTest
 import CoreData
+import CloudKit
 @testable import Stitch
 
 class StitchTesterTests: XCTestCase, StitchConnectionStatus {
@@ -279,5 +280,56 @@ class StitchTesterTests: XCTestCase, StitchConnectionStatus {
       XCTAssertEqual(store?.changesCount(store!.backingMOC), 0)
       _ = addLocationAndSave()
       XCTAssertEqual(store?.changesCount(store!.backingMOC), 1)
+   }
+
+   func testAllTypes() {
+      guard let context = context else {
+         XCTFail("Context should not be nil")
+         return
+      }
+
+      let testData = Data([0x61, 0x6e, 0x64, 0x61, 0x74, 0x61, 0x30, 0x31])
+
+      let allTypes = AllTypes(entity: AllTypes.entity(), insertInto: context)
+      allTypes.string = "be gay do crimes fk cops"
+      allTypes.int16 = 16
+      allTypes.int32 = 32
+      allTypes.int64 = 64
+      allTypes.decimal = NSDecimalNumber(floatLiteral: Double.pi)
+      allTypes.float = Float.pi
+      allTypes.boolean = true
+      allTypes.double = Double.pi
+      allTypes.binaryData = testData
+      allTypes.externalData = testData
+      allTypes.date = Date()
+
+      save()
+
+      do {
+         let record = try store?.ckRecordForOutwardObject(allTypes)
+         XCTAssertNotNil(record)
+
+         XCTAssertEqual(record?.value(forKey: "string") as? String, "be gay do crimes fk cops")
+         XCTAssertEqual((record?.value(forKey: "int16") as? NSNumber)?.int16Value, allTypes.int16)
+         XCTAssertEqual((record?.value(forKey: "int32") as? NSNumber)?.int32Value, allTypes.int32)
+         XCTAssertEqual((record?.value(forKey: "int64") as? NSNumber)?.int64Value, allTypes.int64)
+         XCTAssertEqual((record?.value(forKey: "decimal") as? NSNumber)?.decimalValue, NSDecimalNumber(floatLiteral: Double.pi).decimalValue)
+         XCTAssertEqual((record?.value(forKey: "float") as? NSNumber)?.floatValue, Float.pi)
+         XCTAssertEqual((record?.value(forKey: "boolean") as? NSNumber)?.boolValue, true)
+         XCTAssertEqual((record?.value(forKey: "double") as? NSNumber)?.doubleValue, Double.pi)
+         XCTAssertEqual(record?.value(forKey: "binaryData") as? Data, testData)
+         XCTAssert(record?.value(forKey: "externalData") is CKAsset)
+         if let url = (record?.value(forKey: "externalData") as? CKAsset)?.fileURL,
+            let externalData = try? Data(contentsOf: url)
+         {
+            XCTAssertEqual(externalData, testData)
+         } else {
+            XCTFail("Failed to read data)")
+         }
+         XCTAssertEqual(record?.value(forKeyPath: "date") as? Date, allTypes.date)
+
+      } catch {
+         XCTFail("Thrown error trying to get ckRecord \(error)")
+      }
    }
 }
