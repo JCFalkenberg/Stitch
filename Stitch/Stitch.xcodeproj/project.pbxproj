@@ -15,6 +15,7 @@
 		B9C7574722BC866B0086163A /* Stitch in Frameworks */ = {isa = PBXBuildFile; productRef = B9C7574622BC866B0086163A /* Stitch */; };
 		B9CDF08422BD18F5004A52D3 /* TestModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */; };
 		B9D748F522BC8C420058EDB9 /* StitchTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D748F422BC8C420058EDB9 /* StitchTesterTests.swift */; };
+		B9EE702E22C428E700AFF960 /* StitchSyncSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */; };
 		B9F67BD922BCA5860092EEF1 /* StitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F67BD822BCA5860092EEF1 /* StitchTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,6 +56,7 @@
 		B9D748F222BC8C420058EDB9 /* StitchTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StitchTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9D748F422BC8C420058EDB9 /* StitchTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchTesterTests.swift; sourceTree = "<group>"; };
 		B9D748F622BC8C420058EDB9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchSyncSystemTests.swift; sourceTree = "<group>"; };
 		B9F67BD822BCA5860092EEF1 /* StitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -124,6 +126,7 @@
 				B9D748F422BC8C420058EDB9 /* StitchTesterTests.swift */,
 				B9F67BD822BCA5860092EEF1 /* StitchTests.swift */,
 				B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */,
+				B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */,
 				B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */,
 				B9D748F622BC8C420058EDB9 /* Info.plist */,
 			);
@@ -243,6 +246,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B9CDF08422BD18F5004A52D3 /* TestModel.xcdatamodeld in Sources */,
+				B9EE702E22C428E700AFF960 /* StitchSyncSystemTests.swift in Sources */,
 				B930847622C2C3CA0099E0A7 /* StitchCloudKitTests.swift in Sources */,
 				B9F67BD922BCA5860092EEF1 /* StitchTests.swift in Sources */,
 				B9D748F522BC8C420058EDB9 /* StitchTesterTests.swift in Sources */,

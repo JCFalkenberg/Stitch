@@ -84,6 +84,7 @@ do {
                                                            configuration: nil,
                                                            URL: url,
                                                            options: options) as? StitchStore
+   store?.triggerSync(.storeAdded)
 } catch {
    print("There was an error adding the store! \(error)")
 }

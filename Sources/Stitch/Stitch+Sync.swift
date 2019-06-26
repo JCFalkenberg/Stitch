@@ -106,6 +106,7 @@ extension StitchStore {
                bundleIDs.append(bundleIdentifier)
                self.setMetadata(bundleIDs, key: "SMStoreSetupFromBundleIDs")
             }
+            self.syncStore(reason)
          case .failure(let error):
             DispatchQueue.main.async { () -> Void in
                NotificationCenter.default.post(name: Notifications.DidFailSync,
