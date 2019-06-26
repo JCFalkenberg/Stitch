@@ -129,7 +129,7 @@ class StitchCloudKitTests: XCTestCase {
       fetchSubscriptionOp.fetchSubscriptionCompletionBlock = { (subscriptionDict, error) in
          if let error = error as! CKError? {
             if exists {
-               XCTFail("there was an error retrieving zones \(error)")
+               XCTFail("there was an error retrieving subscriptions \(error)")
             } else {
                XCTAssertEqual(error.code, CKError.partialFailure)
                let partialError = error.partialErrorsByItemID?[subscriptionID] as! CKError
@@ -154,33 +154,6 @@ class StitchCloudKitTests: XCTestCase {
       setupStore()
 
       checkZones(exists: true)
-//      let zoneExpectation = XCTestExpectation(description: "Zone fetch")
-//      let fetchZonesOp =  CKFetchRecordZonesOperation(recordZoneIDs: [CKRecordZone.ID(zoneName: zoneString!)])
-//      fetchZonesOp.fetchRecordZonesCompletionBlock = { (zoneDict, error) in
-//         if let error = error {
-//            XCTFail("there was an error retrieving zones \(error)")
-//         } else {
-//            XCTAssertEqual(zoneDict?.count, 1)
-//         }
-//
-//         zoneExpectation.fulfill()
-//      }
-//      OperationQueue.main.addOperation(fetchZonesOp)
-//      wait(for: [zoneExpectation], timeout: 30.0)
-//
-//      let subscriptionExpectation = XCTestExpectation(description: "Subscription fetch")
-//      let fetchSubscriptionOp = CKFetchSubscriptionsOperation(subscriptionIDs: [CKSubscription.ID(zoneString!)])
-//      fetchSubscriptionOp.fetchSubscriptionCompletionBlock = { (subscriptionDict, error) in
-//         if let error = error {
-//            XCTFail("there was an error retrieving zones \(error)")
-//         } else {
-//            XCTAssertEqual(subscriptionDict?.count, 1)
-//         }
-//
-//         subscriptionExpectation.fulfill()
-//      }
-//      OperationQueue.main.addOperation(fetchSubscriptionOp)
-//      wait(for: [subscriptionExpectation], timeout: 30.0)
    }
 
    func testTearDown() {
