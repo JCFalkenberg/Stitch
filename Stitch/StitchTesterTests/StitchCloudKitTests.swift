@@ -14,12 +14,14 @@ import CoreData
 class StitchCloudKitTests: XCTestCase {
    var zoneString: String? = nil
 
+   var operationQueue = OperationQueue()
+
    override func setUp() {
       guard let selector = invocation?.selector else {
          XCTFail("No invocation")
          return
       }
-      zoneString = "CloudKitTestsZone-\(NSStringFromSelector(selector))"
+      zoneString = "CloudKitTestsZone\(NSStringFromSelector(selector))"
 
       if selector == #selector(testSetup) {
          // The rest of this will be done in the testSetup() itself
@@ -54,13 +56,13 @@ class StitchCloudKitTests: XCTestCase {
 
                expectation.fulfill()
             }
-            OperationQueue.main.addOperation(subOperation)
+            self.operationQueue.addOperation(subOperation)
          case .failure(let error):
             XCTFail("Error seting up zone \(error)")
             expectation.fulfill()
          }
       }
-      OperationQueue.main.addOperation(setupOperation)
+      operationQueue.addOperation(setupOperation)
       wait(for: [expectation], timeout: 10.0)
    }
 
@@ -81,7 +83,7 @@ class StitchCloudKitTests: XCTestCase {
       let database = CKContainer.default().privateCloudDatabase
       StitchStore.destroyZone(zone: zone,
                               in: database,
-                              on: OperationQueue.main)
+                              on: operationQueue)
       { (result) in
          switch result {
          case .success(_):
@@ -93,7 +95,7 @@ class StitchCloudKitTests: XCTestCase {
          expectation.fulfill()
       }
 
-      wait(for: [expectation], timeout: 30.0)
+      wait(for: [expectation], timeout: 10.0)
    }
 
    func checkZones(exists: Bool) {
@@ -120,8 +122,8 @@ class StitchCloudKitTests: XCTestCase {
 
          zoneExpectation.fulfill()
       }
-      OperationQueue.main.addOperation(fetchZonesOp)
-      wait(for: [zoneExpectation], timeout: 30.0)
+      operationQueue.addOperation(fetchZonesOp)
+      wait(for: [zoneExpectation], timeout: 10.0)
 
       let subscriptionExpectation = XCTestExpectation(description: "Subscription fetch")
       let subscriptionID = CKSubscription.ID(zoneString!)
@@ -146,8 +148,8 @@ class StitchCloudKitTests: XCTestCase {
 
          subscriptionExpectation.fulfill()
       }
-      OperationQueue.main.addOperation(fetchSubscriptionOp)
-      wait(for: [subscriptionExpectation], timeout: 30.0)
+      operationQueue.addOperation(fetchSubscriptionOp)
+      wait(for: [subscriptionExpectation], timeout: 10.0)
    }
 
    func testSetup() {
@@ -162,9 +164,95 @@ class StitchCloudKitTests: XCTestCase {
       checkZones(exists: false)
    }
 
-   func testPushObjects() {
+   func pushRecord() -> CKRecord {
+      let expectation = XCTestExpectation(description: "Zone push")
+      let zone = CKRecordZone.ID(zoneName: zoneString!,
+                                 ownerName: CKCurrentUserDefaultName)
+      let record = CKRecord(recordType: "Entry",
+                            recordID: CKRecord.ID(recordName: UUID().uuidString,
+                                                  zoneID: zone))
+      record.setValue("be gay do crimes fk cops", forKey: "text")
+      let operation = SyncPushOperation(insertedOrUpdated: [record],
+                                        deletedIDs: [],
+                                        database: CKContainer.default().privateCloudDatabase)
+      { (result) in
+         switch result {
+         case .success(_):
+         break //we succeeded
+         case .failure(let error):
+            XCTFail("Error pushing records \(error)")
+         }
+
+         expectation.fulfill()
+      }
+      operationQueue.addOperation(operation)
+      wait(for: [expectation], timeout: 10.0)
+      return record
    }
 
+   func testPushObjects() {
+      _ = pushRecord()
+   }
+
+   //This test seems to be unreliable, succeeding sometimes and failing others
+   //Possibly timing issue on iCloud having enough time to make them available
    func testPullObjects() {
+      let record = pushRecord()
+
+      sleep(5) //Sleep for a bit to let it process
+
+      let expectation = XCTestExpectation(description: "Entry pull")
+      let zone = CKRecordZone.ID(zoneName: zoneString!,
+                                 ownerName: CKCurrentUserDefaultName)
+      let pullOperation = EntityDownloadOperationWrapper(entityName: "Entry",
+                                                         keysToSync: nil,
+                                                         database: CKContainer.default().privateCloudDatabase,
+                                                         zone: zone)
+      { (records, error) in
+         if let error = error {
+            XCTFail("Error pulling records \(error)")
+         } else if let records = records {
+            XCTAssertEqual(records.count, 1)
+            XCTAssertEqual(records.first?.recordID, record.recordID)
+            let text = records.first?.value(forKey: "text") as? String
+            XCTAssertNotNil(text)
+            XCTAssertEqual(text, record.value(forKey: "text") as? String)
+         } else {
+            XCTFail("No error or records...")
+         }
+
+         expectation.fulfill()
+      }
+
+      operationQueue.addOperation(pullOperation)
+      wait(for: [expectation], timeout: 10.0)
+   }
+
+   func testPullChanges() {
+      let record = pushRecord()
+
+      let expectation = XCTestExpectation(description: "Test pull changes")
+      let pullOperation = FetchChangesOperation(changesFor: CKRecordZone.ID(zoneName: zoneString!,
+                                                                            ownerName: CKCurrentUserDefaultName),
+                                                in: CKContainer.default().privateCloudDatabase,
+                                                previousToken: nil,
+                                                keysToSync: nil)
+      { (result) in
+         switch result {
+         case .success(let syncResults):
+            XCTAssertEqual(syncResults.changedInserted.count, 1)
+            XCTAssertEqual(syncResults.changedInserted.first?.recordID, record.recordID)
+            let text = syncResults.changedInserted.first?.value(forKey: "text") as? String
+            XCTAssertNotNil(text)
+            XCTAssertEqual(text, record.value(forKey: "text") as? String)
+         case .failure(let error):
+            XCTFail("Error pushing records \(error)")
+         }
+
+         expectation.fulfill()
+      }
+
+      operationQueue.addOperation(pullOperation)
+      wait(for: [expectation], timeout: 10.0)
    }
 }

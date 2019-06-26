@@ -29,12 +29,14 @@ class EntityDownloadOperation: CKQueryOperation {
    init(entityName: String,
         keysToSync: [String]?,
         database: CKDatabase?,
+        zone: CKRecordZone.ID,
         cursor: CKQueryOperation.Cursor?,
         completion: @escaping ([CKRecord]?, CKQueryOperation.Cursor?, Error?) -> Void)
    {
       super.init()
       self.desiredKeys = keysToSync
       self.database = database
+      self.zoneID = zone
 
       if let cursor = cursor {
          self.cursor = cursor
@@ -59,12 +61,15 @@ class EntityDownloadOperationWrapper: AsyncOperation {
    var downloadedRecords = [CKRecord]()
    var keysToSync: [String]?
    var database: CKDatabase?
+   var zone: CKRecordZone.ID
 
    init(entityName: String,
         keysToSync: [String]?,
         database: CKDatabase?,
+        zone: CKRecordZone.ID,
         completion: @escaping ([CKRecord]?, Error?) -> Void)
    {
+      self.zone = zone
       self.database = database
       self.keysToSync = keysToSync
       self.entityName = entityName
@@ -80,6 +85,7 @@ class EntityDownloadOperationWrapper: AsyncOperation {
       let batch = EntityDownloadOperation(entityName: entityName,
                                           keysToSync: keysToSync,
                                           database: database,
+                                          zone: zone,
                                           cursor: cursor)
       { (records, cursor, error) in
          if let error = error as? CKError {
@@ -110,6 +116,7 @@ class MigrationDownloadOperation: AsyncOperation {
    var changedEntities: [String]
 
    var database: CKDatabase?
+   var zone: CKRecordZone.ID
    var context: NSManagedObjectContext
    var keysToSync: [String]?
 
@@ -120,9 +127,11 @@ class MigrationDownloadOperation: AsyncOperation {
    init(changed: [String],
         keysToSync: [String]?,
         database: CKDatabase?,
+        zone: CKRecordZone.ID,
         context parent: NSManagedObjectContext,
         completion: @escaping ([NSManagedObjectID], [NSManagedObjectID], Error?) -> Void)
    {
+      self.zone = zone
       self.database = database
       self.keysToSync = keysToSync
       self.changedEntities = changed
@@ -145,7 +154,8 @@ class MigrationDownloadOperation: AsyncOperation {
       for (index, entityName) in changedEntities.enumerated() {
          let operation = EntityDownloadOperationWrapper(entityName: entityName,
                                                         keysToSync: keysToSync,
-                                                        database: database)
+                                                        database: database,
+                                                        zone: zone)
          { (records, error) in
             if let records = records {
                self.insertedOrUpdatedRecords.append(contentsOf: records)

@@ -192,6 +192,7 @@ extension StitchStore {
       let operation = MigrationDownloadOperation(changed: changedEntitesToMigrate,
                                                  keysToSync: keysToSync,
                                                  database: database,
+                                                 zone: zoneID,
                                                  context: backingMOC)
       { (added, updated, error) in
          if let error = error {

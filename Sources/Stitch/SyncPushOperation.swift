@@ -89,7 +89,7 @@ class SyncPushOperation: AsyncOperation {
       { (result) in
          switch result {
          case .success(let operation):
-            print("operation succeeded")
+//            print("operation succeeded")
             self.pushedUpdates.append(contentsOf: operation.pushed)
             self.pushedDeletions.append(contentsOf: operation.deleted)
             self.checkProgress()
@@ -133,7 +133,7 @@ class SyncPushOperation: AsyncOperation {
    }
 
    func checkProgress() {
-      if operationQueue.operationCount == 0 &&
+      if operationQueue.operationCount == 1 &&
          pushedUpdates.count == updates.count &&
          pushedDeletions.count == deletes.count &&
          backingOffOperations == 0
