@@ -22,6 +22,13 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
 
    var operationQueue = OperationQueue()
 
+   static let doesntNeedSetupBefore: [Selector] = [
+      #selector(testSyncDown)
+   ]
+
+   static let doesntNeedTearDownAfter: [Selector] = [
+   ]
+
    override func setUp() {
       guard let selector = invocation?.selector else {
          XCTFail("No invocation")
@@ -29,6 +36,14 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
       }
       zoneString = "StitchSyncTestsZone\(NSStringFromSelector(selector))"
 
+      if StitchSyncSystemTests.doesntNeedSetupBefore.contains(selector) {
+         return
+      }
+
+      addStore()
+   }
+
+   func addStore() {
       do {
          coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
          let options: [String: Any] =  [
@@ -39,7 +54,7 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
          ]
 
          var storeURL = URL(fileURLWithPath: NSTemporaryDirectory())
-         storeURL.appendPathComponent("\(NSStringFromSelector(selector)).test")
+         storeURL.appendPathComponent("\(zoneString!).test")
          store = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
                                                      configurationName: "Success",
                                                      at: storeURL,
@@ -66,6 +81,10 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
    }
 
    override func tearDown() {
+      if StitchSyncSystemTests.doesntNeedTearDownAfter.contains(invocation!.selector) {
+         return
+      }
+
       context = nil
       let url = store?.url
       if let store = store {
@@ -80,6 +99,27 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
          }
       }
       coordinator = nil
+
+      let expectation = XCTestExpectation(description: "Store teardown")
+
+      let zone = CKRecordZone(zoneID: CKRecordZone.ID(zoneName: zoneString!,
+                                                      ownerName: CKCurrentUserDefaultName))
+      let database = CKContainer.default().privateCloudDatabase
+      StitchStore.destroyZone(zone: zone,
+                              in: database,
+                              on: operationQueue)
+      { (result) in
+         switch result {
+         case .success(_):
+            break
+         case .failure(let error):
+            XCTFail("There was an error deleting the database \(error)")
+         }
+
+         expectation.fulfill()
+      }
+
+      wait(for: [expectation], timeout: 10.0)
    }
 
    var syncExpectation: XCTestExpectation? = nil
@@ -124,6 +164,32 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
       }
    }
 
+   func pushRecord() -> CKRecord {
+      let expectation = XCTestExpectation(description: "Zone push")
+      let zone = CKRecordZone.ID(zoneName: zoneString!,
+                                 ownerName: CKCurrentUserDefaultName)
+      let record = CKRecord(recordType: "Entry",
+                            recordID: CKRecord.ID(recordName: UUID().uuidString,
+                                                  zoneID: zone))
+      record.setValue("be gay do crimes fk cops", forKey: "text")
+      let operation = SyncPushOperation(insertedOrUpdated: [record],
+                                        deletedIDs: [],
+                                        database: CKContainer.default().privateCloudDatabase)
+      { (result) in
+         switch result {
+         case .success(_):
+         break //we succeeded
+         case .failure(let error):
+            XCTFail("Error pushing records \(error)")
+         }
+
+         expectation.fulfill()
+      }
+      operationQueue.addOperation(operation)
+      wait(for: [expectation], timeout: 10.0)
+      return record
+   }
+
    func testPushChanges() {
       guard let entry = addEntryAndSave() else {
          XCTFail("Failed to add entry")
@@ -159,5 +225,65 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
 
       operationQueue.addOperation(pullOperation)
       wait(for: [expectation], timeout: 10.0)
+   }
+
+   func testSyncDown() {
+      let expectation = XCTestExpectation(description: "Store setup")
+
+      let zone = CKRecordZone(zoneID: CKRecordZone.ID(zoneName: zoneString!,
+                                                      ownerName: CKCurrentUserDefaultName))
+      let database = CKContainer.default().privateCloudDatabase
+
+      let setupOperation = CKModifyRecordZonesOperation(create: zone,
+                                                        in: database)
+      { (result) in
+         switch result {
+         case .success(_):
+            let subOperation = CKModifySubscriptionsOperation(create: zone.zoneID,
+                                                              name: self.zoneString!,
+                                                              in: database)
+            { (result) in
+               switch result {
+               case .success(_):
+                  break
+               case .failure(let error):
+                  XCTFail("There was an error deleting the database \(error)")
+               }
+
+               expectation.fulfill()
+            }
+            self.operationQueue.addOperation(subOperation)
+         case .failure(let error):
+            XCTFail("Error seting up zone \(error)")
+            expectation.fulfill()
+         }
+      }
+      operationQueue.addOperation(setupOperation)
+      wait(for: [expectation], timeout: 10.0)
+
+      let record = pushRecord()
+
+      sleep(5)
+
+      addStore()
+      store?.triggerSync(.storeAdded)
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 10.0)
+      }
+
+      let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1)
+      guard let object = results?.first else {
+         XCTFail("No objects")
+         return
+      }
+      let syncedRecord = try? store?.ckRecordForOutwardObject(object)
+      XCTAssertNotNil(syncedRecord)
+      XCTAssertEqual(syncedRecord?.recordID, record.recordID)
    }
 }
