@@ -82,13 +82,13 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
       coordinator = nil
    }
 
-   var expectation: XCTestExpectation? = nil
+   var syncExpectation: XCTestExpectation? = nil
    func syncNotification(_ note: Notification) {
       if note.name == StitchStore.Notifications.DidFinishSync {
-         expectation?.fulfill()
+         syncExpectation?.fulfill()
       } else if note.name == StitchStore.Notifications.DidFailSync {
          XCTFail("Failed sync! \(String(describing: note.userInfo))")
-         expectation?.fulfill()
+         syncExpectation?.fulfill()
       } else if note.name == StitchStore.Notifications.DidStartSync {
          print("started")
       } else {
@@ -97,10 +97,67 @@ class StitchSyncSystemTests: XCTestCase, StitchConnectionStatus {
    }
 
    func testStoreReady() {
-      expectation = XCTestExpectation(description: "Sync Happened")
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
       store?.triggerSync(.storeAdded)
 
-      guard let expectation = expectation else { return }
+      guard let expectation = syncExpectation else { return }
+      wait(for: [expectation], timeout: 10.0)
+   }
+
+   func addEntryAndSave() -> Entry? {
+      guard let context = context else {
+         XCTFail("Context should not be nil")
+         return nil
+      }
+
+      let entry = Entry(entity: Entry.entity(), insertInto: context)
+      entry.text = "be gay do crimes fk cops"
+
+      save()
+      return entry
+   }
+   func save() {
+      do {
+         try context?.save()
+      } catch {
+         XCTFail("Database should save ok \(error)")
+      }
+   }
+
+   func testPushChanges() {
+      guard let entry = addEntryAndSave() else {
+         XCTFail("Failed to add entry")
+         return
+      }
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 10.0)
+      }
+
+      let record = try? store?.ckRecordForOutwardObject(entry)
+      let expectation = XCTestExpectation(description: "Test pull changes")
+      let pullOperation = FetchChangesOperation(changesFor: CKRecordZone.ID(zoneName: zoneString!,
+                                                                            ownerName: CKCurrentUserDefaultName),
+                                                in: CKContainer.default().privateCloudDatabase,
+                                                previousToken: nil,
+                                                keysToSync: nil)
+      { (result) in
+         switch result {
+         case .success(let syncResults):
+            XCTAssertEqual(syncResults.changedInserted.count, 1)
+            XCTAssertEqual(syncResults.changedInserted.first?.recordID, record?.recordID)
+            let text = syncResults.changedInserted.first?.value(forKey: "text") as? String
+            XCTAssertNotNil(text)
+            XCTAssertEqual(text, entry.text)
+         case .failure(let error):
+            XCTFail("Error pushing records \(error)")
+         }
+
+         expectation.fulfill()
+      }
+
+      operationQueue.addOperation(pullOperation)
       wait(for: [expectation], timeout: 10.0)
    }
 }
