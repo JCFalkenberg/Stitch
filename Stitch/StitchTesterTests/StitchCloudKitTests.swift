@@ -11,91 +11,27 @@ import CloudKit
 import CoreData
 @testable import Stitch
 
-class StitchCloudKitTests: XCTestCase {
-   var zoneString: String? = nil
-
-   var operationQueue = OperationQueue()
+class StitchCloudKitTests: StitchTesterRoot {
+   override var internetConnectionAvailable: Bool { return true }
 
    override func setUp() {
-      guard let selector = invocation?.selector else {
-         XCTFail("No invocation")
-         return
-      }
-      zoneString = "CloudKitTestsZone\(NSStringFromSelector(selector))"
-
-      if selector == #selector(testSetup) {
+      super.setUp()
+      if invocation?.selector == #selector(testSetup) {
          // The rest of this will be done in the testSetup() itself
          return
       }
 
-      setupStore()
-   }
-
-   func setupStore() {
-      let expectation = XCTestExpectation(description: "Store setup")
-
-      let zone = CKRecordZone(zoneID: CKRecordZone.ID(zoneName: zoneString!,
-                                                      ownerName: CKCurrentUserDefaultName))
-      let database = CKContainer.default().privateCloudDatabase
-
-      let setupOperation = CKModifyRecordZonesOperation(create: zone,
-                                                        in: database)
-      { (result) in
-         switch result {
-         case .success(_):
-            let subOperation = CKModifySubscriptionsOperation(create: zone.zoneID,
-                                                              name: self.zoneString!,
-                                                              in: database)
-            { (result) in
-               switch result {
-               case .success(_):
-                  break
-               case .failure(let error):
-                  XCTFail("There was an error deleting the database \(error)")
-               }
-
-               expectation.fulfill()
-            }
-            self.operationQueue.addOperation(subOperation)
-         case .failure(let error):
-            XCTFail("Error seting up zone \(error)")
-            expectation.fulfill()
-         }
-      }
-      operationQueue.addOperation(setupOperation)
-      wait(for: [expectation], timeout: 10.0)
+      setupZone()
    }
 
    override func tearDown() {
+      super.tearDown()
       if invocation?.selector == #selector(testTearDown) {
          // The rest of this will be done in the testSetup() itself
          return
       }
 
-      tearDownStore()
-   }
-
-   func tearDownStore() {
-      let expectation = XCTestExpectation(description: "Store teardown")
-
-      let zone = CKRecordZone(zoneID: CKRecordZone.ID(zoneName: zoneString!,
-                                                      ownerName: CKCurrentUserDefaultName))
-      let database = CKContainer.default().privateCloudDatabase
-      StitchStore.destroyZone(zone: zone,
-                              in: database,
-                              on: operationQueue)
-      { (result) in
-         switch result {
-         case .success(_):
-            break
-         case .failure(let error):
-            XCTFail("There was an error deleting the database \(error)")
-         }
-
-         expectation.fulfill()
-      }
-
-      wait(for: [expectation], timeout: 10.0)
+      tearDownZone()
    }
 
    func checkZones(exists: Bool) {
@@ -153,41 +89,15 @@ class StitchCloudKitTests: XCTestCase {
    }
 
    func testSetup() {
-      setupStore()
+      setupZone()
 
       checkZones(exists: true)
    }
 
    func testTearDown() {
-      tearDownStore()
+      tearDownZone()
 
       checkZones(exists: false)
-   }
-
-   func pushRecord() -> CKRecord {
-      let expectation = XCTestExpectation(description: "Zone push")
-      let zone = CKRecordZone.ID(zoneName: zoneString!,
-                                 ownerName: CKCurrentUserDefaultName)
-      let record = CKRecord(recordType: "Entry",
-                            recordID: CKRecord.ID(recordName: UUID().uuidString,
-                                                  zoneID: zone))
-      record.setValue("be gay do crimes fk cops", forKey: "text")
-      let operation = SyncPushOperation(insertedOrUpdated: [record],
-                                        deletedIDs: [],
-                                        database: CKContainer.default().privateCloudDatabase)
-      { (result) in
-         switch result {
-         case .success(_):
-         break //we succeeded
-         case .failure(let error):
-            XCTFail("Error pushing records \(error)")
-         }
-
-         expectation.fulfill()
-      }
-      operationQueue.addOperation(operation)
-      wait(for: [expectation], timeout: 10.0)
-      return record
    }
 
    func testPushObjects() {

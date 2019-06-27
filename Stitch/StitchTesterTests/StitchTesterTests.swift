@@ -11,74 +11,25 @@ import CoreData
 import CloudKit
 @testable import Stitch
 
-class StitchTesterTests: XCTestCase, StitchConnectionStatus {
-   var model: NSManagedObjectModel = NSManagedObjectModel.StitchTestsModel
-   var coordinator: NSPersistentStoreCoordinator? = nil
-   var context: NSManagedObjectContext? = nil
-   var store: StitchStore? = nil
+class StitchTesterTests: StitchTesterRoot {
+   override var storeOptions: [String : Any] {
+      return [
+         StitchStore.Options.BackingStoreType: NSInMemoryStoreType,
+         StitchStore.Options.ConnectionStatusDelegate: self,
+         StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true)
+      ]
+   }
 
-   var internetConnectionAvailable: Bool { return false }
+   override var internetConnectionAvailable: Bool { return false }
 
    override func setUp() {
-      do {
-         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
-         let options: [String: Any] =  [
-            StitchStore.Options.BackingStoreType: NSInMemoryStoreType,
-            StitchStore.Options.ConnectionStatusDelegate: self,
-            StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true)
-         ]
-         store = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
-                                                     configurationName: "Success",
-                                                     at: URL(fileURLWithPath: ""),
-                                                     options: options) as? StitchStore
-         XCTAssertNotNil(store)
-         context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-         context?.persistentStoreCoordinator = coordinator
-      } catch {
-         XCTFail("There was an error adding the persistent store \(error)")
-      }
+      super.setUp()
+      addStore()
    }
 
    override func tearDown() {
-      // Put teardown code here. This method is called after the invocation of each test method in the class.
-      context = nil
-      if let store = store {
-         try? coordinator?.remove(store)
-         self.store = nil
-      }
-      coordinator = nil
-   }
-
-   func addEntryAndSave() -> Entry? {
-      guard let context = context else {
-         XCTFail("Context should not be nil")
-         return nil
-      }
-
-      let entry = Entry(entity: Entry.entity(), insertInto: context)
-      entry.text = "be gay do crimes fk cops"
-
-      save()
-      return entry
-   }
-   func addLocationAndSave() -> Location? {
-      guard let context = context else {
-         XCTFail("Context should not be nil")
-         return nil
-      }
-
-      let location = Location(entity: Location.entity(), insertInto: context)
-      location.displayName = "Home"
-
-      save()
-      return location
-   }
-   func save() {
-      do {
-         try context?.save()
-      } catch {
-         XCTFail("Database should save ok \(error)")
-      }
+      removeStore()
+      super.tearDown()
    }
 
    func testAddObject() {
