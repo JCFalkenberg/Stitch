@@ -114,4 +114,40 @@ class StitchSyncSystemTests: StitchTesterRoot {
       XCTAssertEqual(syncedRecord?.recordID, record.recordID)
       XCTAssertEqual(record.value(forKey: "text") as? String, object.text)
    }
+
+   func testSyncUpLarge() {
+      var entries = Set<Entry>()
+      for index in 0..<1000 {
+         if let entry = addEntry() {
+            entry.text = "number: \(index)"
+            entries.insert(entry)
+         }
+      }
+      save()
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      let zone = CKRecordZone.ID(zoneName: zoneString!,
+                                 ownerName: CKCurrentUserDefaultName)
+
+      pullChanges { (syncResults) in
+         var syncedEntries = Set<Entry>()
+         let syncedRecordIDs = Set<CKRecord.ID>(syncResults.changedInserted.map {
+            $0.recordID
+         })
+
+         for entry in entries {
+            if let backingID = try? self.store?.backingObject(for: entry).ckRecordID(zone: zone),
+               syncedRecordIDs.contains(backingID)
+            {
+               syncedEntries.insert(entry)
+            }
+         }
+         XCTAssertEqual(syncedEntries.count, entries.count)
+      }
+   }
 }

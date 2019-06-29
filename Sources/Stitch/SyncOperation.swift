@@ -186,14 +186,13 @@ class SyncOperation: AsyncOperation {
       {
          resolvedPushUpdates(insertedOrUpdated: localInsertedOrUpdated,
                              deletedIDs: localDeletedIDs)
+      } else {
+         resolve(inserted: insertedOrUpdated,
+                 deletedByType: deletedByType,
+                 localInserted: localInsertedOrUpdated,
+                 localDeleted: localDeletedIDs)
+
       }
-
-      // Ok, time to resolve updates
-
-      resolve(inserted: insertedOrUpdated,
-              deletedByType: deletedByType,
-              localInserted: localInsertedOrUpdated,
-              localDeleted: localDeletedIDs)
    }
 
    fileprivate func recordsByID(_ records: [CKRecord]) -> [CKRecord.ID: CKRecord] {

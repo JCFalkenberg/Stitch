@@ -107,7 +107,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       }
    }
 
-   func addEntryAndSave() -> Entry? {
+   func addEntry() -> Entry? {
       guard let context = context else {
          XCTFail("Context should not be nil")
          return nil
@@ -115,7 +115,10 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
 
       let entry = Entry(entity: Entry.entity(), insertInto: context)
       entry.text = "be gay do crimes fk cops"
-
+      return entry
+   }
+   func addEntryAndSave() -> Entry? {
+      let entry = addEntry()
       save()
       return entry
    }

@@ -83,8 +83,8 @@ class SyncPushOperation: AsyncOperation {
    }
 
    func queueOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecord.ID]) {
-      let operation = ModifyRecordsOperation(recordsToSave: updates,
-                                             recordIDsToDelete: deletes,
+      let operation = ModifyRecordsOperation(recordsToSave: recordsToSave,
+                                             recordIDsToDelete: recordIDsToDelete,
                                              database: database)
       { (result) in
          switch result {
@@ -94,19 +94,21 @@ class SyncPushOperation: AsyncOperation {
             self.pushedDeletions.append(contentsOf: operation.deleted)
             self.checkProgress()
          case .failure(let error as NSError):
-            print("operation failed \(error)")
             //If we are told too large, split in half and do it again
             if error.domain == CKErrorDomain &&
                error.code == CKError.limitExceeded.rawValue
             {
+               print("Split and requeue")
                self.splitAndReAddToQueue(recordsToSave: recordsToSave, recordIDsToDelete: recordIDsToDelete)
             } else if error.domain == CKErrorDomain &&
                (error.code == CKError.requestRateLimited.rawValue || error.code == CKError.serviceUnavailable.rawValue)
             {
+               print("Backoff")
                self.backoff(recordsToSave: recordsToSave,
                             recordIDsToDelete: recordIDsToDelete,
                             seconds: (error as? CKError)?.retryAfterSeconds)
             } else {
+               print("Error")
                self.pushError = error
                self.wrapUp()
             }
