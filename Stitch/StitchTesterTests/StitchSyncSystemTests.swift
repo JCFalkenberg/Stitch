@@ -127,5 +127,6 @@ class StitchSyncSystemTests: StitchTesterRoot {
       let syncedRecord = try? store?.ckRecordForOutwardObject(object)
       XCTAssertNotNil(syncedRecord)
       XCTAssertEqual(syncedRecord?.recordID, record.recordID)
+      XCTAssertEqual(record.value(forKey: "text") as? String, object.text)
    }
 }
