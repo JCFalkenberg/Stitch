@@ -101,13 +101,13 @@ class StitchCloudKitTests: StitchTesterRoot {
    }
 
    func testPushObjects() {
-      _ = pushRecord()
+      _ = pushEntry()
    }
 
    //This test seems to be unreliable, succeeding sometimes and failing others
    //Possibly timing issue on iCloud having enough time to make them available
    func testPullObjects() {
-      let record = pushRecord()
+      let record = pushEntry()
 
       sleep(5) //Sleep for a bit to let it process
 
@@ -139,30 +139,14 @@ class StitchCloudKitTests: StitchTesterRoot {
    }
 
    func testPullChanges() {
-      let record = pushRecord()
+      let record = pushEntry()
 
-      let expectation = XCTestExpectation(description: "Test pull changes")
-      let pullOperation = FetchChangesOperation(changesFor: CKRecordZone.ID(zoneName: zoneString!,
-                                                                            ownerName: CKCurrentUserDefaultName),
-                                                in: CKContainer.default().privateCloudDatabase,
-                                                previousToken: nil,
-                                                keysToSync: nil)
-      { (result) in
-         switch result {
-         case .success(let syncResults):
-            XCTAssertEqual(syncResults.changedInserted.count, 1)
-            XCTAssertEqual(syncResults.changedInserted.first?.recordID, record.recordID)
-            let text = syncResults.changedInserted.first?.value(forKey: "text") as? String
-            XCTAssertNotNil(text)
-            XCTAssertEqual(text, record.value(forKey: "text") as? String)
-         case .failure(let error):
-            XCTFail("Error pushing records \(error)")
-         }
-
-         expectation.fulfill()
+      pullChanges { (syncResults) in
+         XCTAssertEqual(syncResults.changedInserted.count, 1)
+         XCTAssertEqual(syncResults.changedInserted.first?.recordID, record.recordID)
+         let text = syncResults.changedInserted.first?.value(forKey: "text") as? String
+         XCTAssertNotNil(text)
+         XCTAssertEqual(text, record.value(forKey: "text") as? String)
       }
-
-      operationQueue.addOperation(pullOperation)
-      wait(for: [expectation], timeout: 10.0)
    }
 }

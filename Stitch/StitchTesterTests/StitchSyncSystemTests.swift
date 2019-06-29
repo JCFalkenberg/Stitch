@@ -75,35 +75,20 @@ class StitchSyncSystemTests: StitchTesterRoot {
       }
 
       let record = try? store?.ckRecordForOutwardObject(entry)
-      let expectation = XCTestExpectation(description: "Test pull changes")
-      let pullOperation = FetchChangesOperation(changesFor: CKRecordZone.ID(zoneName: zoneString!,
-                                                                            ownerName: CKCurrentUserDefaultName),
-                                                in: CKContainer.default().privateCloudDatabase,
-                                                previousToken: nil,
-                                                keysToSync: nil)
-      { (result) in
-         switch result {
-         case .success(let syncResults):
-            XCTAssertEqual(syncResults.changedInserted.count, 1)
-            XCTAssertEqual(syncResults.changedInserted.first?.recordID, record?.recordID)
-            let text = syncResults.changedInserted.first?.value(forKey: "text") as? String
-            XCTAssertNotNil(text)
-            XCTAssertEqual(text, entry.text)
-         case .failure(let error):
-            XCTFail("Error pushing records \(error)")
-         }
 
-         expectation.fulfill()
+      pullChanges { (syncResults) in
+         XCTAssertEqual(syncResults.changedInserted.count, 1)
+         XCTAssertEqual(syncResults.changedInserted.first?.recordID, record?.recordID)
+         let text = syncResults.changedInserted.first?.value(forKey: "text") as? String
+         XCTAssertNotNil(text)
+         XCTAssertEqual(text, entry.text)
       }
-
-      operationQueue.addOperation(pullOperation)
-      wait(for: [expectation], timeout: 10.0)
    }
 
    func testSyncDown() {
       setupZone()
 
-      let record = pushRecord()
+      let record = pushEntry()
 
       sleep(5)
 

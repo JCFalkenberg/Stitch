@@ -197,15 +197,19 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       wait(for: [expectation], timeout: 10.0)
    }
 
-   func pushRecord() -> CKRecord {
+   func pushRecords(records: [(type: String, info: [String: CKRecordValue])]) -> [CKRecord]
+   {
       let expectation = XCTestExpectation(description: "Zone push")
       let zone = CKRecordZone.ID(zoneName: zoneString!,
                                  ownerName: CKCurrentUserDefaultName)
-      let record = CKRecord(recordType: "Entry",
-                            recordID: CKRecord.ID(recordName: UUID().uuidString,
-                                                  zoneID: zone))
-      record.setValue("be gay do crimes fk cops", forKey: "text")
-      let operation = SyncPushOperation(insertedOrUpdated: [record],
+      let records: [CKRecord] = records.map {
+         let record = CKRecord(recordType: $0.type,
+                               recordID: CKRecord.ID(recordName: UUID().uuidString,
+                                                     zoneID: zone))
+         record.setValuesForKeys($0.info)
+         return record
+      }
+      let operation = SyncPushOperation(insertedOrUpdated: records,
                                         deletedIDs: [],
                                         database: CKContainer.default().privateCloudDatabase)
       { (result) in
@@ -220,6 +224,35 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       }
       operationQueue.addOperation(operation)
       wait(for: [expectation], timeout: 10.0)
-      return record
+      return records
+   }
+
+   func pushRecord(_ type: String, info: [String: CKRecordValue]) -> CKRecord {
+      return pushRecords(records: [(type: type, info: info)]).first!
+   }
+
+   func pushEntry() -> CKRecord {
+      return pushRecord("Entry", info: ["text": "be gay do crimes fk cops" as CKRecordValue])
+   }
+
+   func pullChanges(_ handler: @escaping (FetchedChanges) -> Void) {
+      let expectation = XCTestExpectation(description: "Test pull changes")
+      let pullOperation = FetchChangesOperation(changesFor: CKRecordZone.ID(zoneName: zoneString!,
+                                                                            ownerName: CKCurrentUserDefaultName),
+                                                in: CKContainer.default().privateCloudDatabase,
+                                                previousToken: nil,
+                                                keysToSync: nil)
+      { (result) in
+         switch result {
+         case .success(let syncResults):
+            handler(syncResults)
+         case .failure(let error):
+            XCTFail("Error pushing records \(error)")
+         }
+         expectation.fulfill()
+      }
+
+      operationQueue.addOperation(pullOperation)
+      wait(for: [expectation], timeout: 10.0)
    }
 }
