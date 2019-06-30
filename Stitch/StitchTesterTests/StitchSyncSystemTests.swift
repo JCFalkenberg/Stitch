@@ -213,4 +213,70 @@ class StitchSyncSystemTests: StitchTesterRoot {
          XCTAssertEqual((entryRecord.value(forKey: "location") as? CKRecord.Reference)?.recordID, locationRecord.recordID)
       }
    }
+
+   func testLocalDelete() {
+      guard let entry = addEntryAndSave() else {
+         XCTFail("No entry created")
+         return
+      }
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      guard let recordID = try? store?.ckRecordForOutwardObject(entry)?.recordID else {
+         XCTFail("Unable to retrieve record ID")
+         return
+      }
+      context?.delete(entry)
+      save()
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      pullChanges { (syncResults) in
+         XCTAssertEqual(syncResults.changedInserted.count, 0)
+         XCTAssertEqual(syncResults.deletedByType.count, 1)
+         XCTAssertEqual(syncResults.deletedByType["Entry"]?.count, 1)
+         XCTAssertEqual(syncResults.deletedByType["Entry"]?.first, recordID)
+      }
+   }
+
+   func testRemoteDelete() {
+      guard let entry = addEntryAndSave() else {
+         XCTFail("No entry created")
+         return
+      }
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      guard let recordID = try? store?.ckRecordForOutwardObject(entry)?.recordID else {
+         XCTFail("Unable to retrieve record ID")
+         return
+      }
+
+      _ = pushRecords(deletedIDs: [recordID])
+
+      store?.triggerSync(.push)
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 0)
+   }
 }

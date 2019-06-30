@@ -203,7 +203,8 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       wait(for: [expectation], timeout: 10.0)
    }
 
-   func pushRecords(records: [(type: String, info: [String: CKRecordValue])]) -> [CKRecord]
+   func pushRecords(records: [(type: String, info: [String: CKRecordValue])] = [],
+                    deletedIDs: [CKRecord.ID] = []) -> [CKRecord]
    {
       let expectation = XCTestExpectation(description: "Zone push")
       let zone = CKRecordZone.ID(zoneName: zoneString!,
@@ -216,7 +217,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
          return record
       }
       let operation = SyncPushOperation(insertedOrUpdated: records,
-                                        deletedIDs: [],
+                                        deletedIDs: deletedIDs,
                                         database: CKContainer.default().privateCloudDatabase)
       { (result) in
          switch result {

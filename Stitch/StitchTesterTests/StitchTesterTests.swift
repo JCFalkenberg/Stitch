@@ -42,6 +42,7 @@ class StitchTesterTests: StitchTesterRoot {
          return
       }
       XCTAssertEqual(changeSets.count, 1)
+      XCTAssertEqual(changeSets.first?.changeType, StitchStore.RecordChange.inserted)
       let records = store?.ckRecords(for: changeSets)
       XCTAssertEqual(records?.count, 1)
       let text = records?.first?.value(forKey: "text") as? String
