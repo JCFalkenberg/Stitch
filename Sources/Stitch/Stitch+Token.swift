@@ -18,10 +18,6 @@ extension StitchStore {
       newToken = serverChangeToken
    }
 
-   func unCommittedToken() -> CKServerChangeToken? {
-      return newToken
-   }
-
    func commitToken() {
       if let token = self.newToken {
          let data = NSKeyedArchiver.archivedData(withRootObject: token)

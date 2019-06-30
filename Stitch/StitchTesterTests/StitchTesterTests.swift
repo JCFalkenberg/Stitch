@@ -32,6 +32,22 @@ class StitchTesterTests: StitchTesterRoot {
       super.tearDown()
    }
 
+   func testSyncOperationIsAsync() {
+      let syncOperation = SyncOperation(store: store!,
+                                        reason: .storeAdded)
+      { (results) in
+         //nothing to see here
+      }
+      XCTAssert(syncOperation.isAsynchronous)
+   }
+
+   func testDeleteToken() {
+      store?.setMetadata(Data(), key: StitchStore.Metadata.SyncTokenKey)
+      XCTAssertNotNil(store?.metadata[StitchStore.Metadata.SyncTokenKey])
+      store?.deleteToken()
+      XCTAssertNil(store?.metadata[StitchStore.Metadata.SyncTokenKey])
+   }
+
    func testAddObject() {
       let entry = addEntryAndSave()
       XCTAssertNotNil(entry)

@@ -315,4 +315,14 @@ class StitchSyncSystemTests: StitchTesterRoot {
       XCTAssertEqual(first.externalData, testData)
 
    }
+
+   func testEntityResync() {
+      _ = addEntryAndSave()
+      awaitSync()
+
+      store?.changedEntitesToMigrate = ["Entry"]
+      store?.redownloadObjectsForMigratedEnttiies()
+
+      awaitSync()
+   }
 }
