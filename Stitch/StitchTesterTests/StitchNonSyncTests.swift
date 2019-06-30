@@ -300,4 +300,51 @@ class StitchNonSyncTests: StitchTesterRoot {
          XCTFail("Thrown error trying to get ckRecord \(error)")
       }
    }
+
+   func testNewValuesForRelationship() {
+      guard let entry = addEntry(),
+         let location = addLocation(),
+         let context = context
+         else {
+            XCTFail("Error")
+            return
+      }
+
+      entry.location = location
+      save()
+
+      guard let value = try? store?.newValue(forRelationship: entry.entity.relationshipsByName["location"]!,
+                                       forObjectWith: entry.objectID,
+                                       with: context) as? NSManagedObjectID else
+      {
+         XCTFail("Unable get the relationship ID")
+         return
+      }
+      XCTAssertNotNil(value)
+      XCTAssertEqual(value.uriRepresentation(), location.objectID.uriRepresentation())
+   }
+
+   func testNewValuesForToManyRelationship() {
+      guard let entry = addEntry(),
+         let location = addLocation(),
+         let context = context
+         else {
+            XCTFail("Error")
+            return
+      }
+
+      entry.location = location
+      save()
+
+      guard let value = try? store?.newValue(forRelationship: location.entity.relationshipsByName["entries"]!,
+                                             forObjectWith: location.objectID,
+                                             with: context) as? [NSManagedObjectID] else
+      {
+         XCTFail("Unable get the relationship ID")
+         return
+      }
+      XCTAssertEqual(value.count, 1)
+      XCTAssertNotNil(value.first)
+      XCTAssertEqual(value.first?.uriRepresentation(), entry.objectID.uriRepresentation())
+   }
 }
