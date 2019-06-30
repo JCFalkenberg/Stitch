@@ -24,7 +24,8 @@ class StitchSyncSystemTests: StitchTesterRoot {
    override var internetConnectionAvailable: Bool { return true }
 
    static let doesntNeedSetupBefore: [Selector] = [
-      #selector(testSyncDown)
+      #selector(testSyncDown),
+      #selector(testSyncDownLarge)
    ]
 
    static let doesntNeedTearDownAfter: [Selector] = [
@@ -149,5 +150,42 @@ class StitchSyncSystemTests: StitchTesterRoot {
          }
          XCTAssertEqual(syncedEntries.count, entries.count)
       }
+   }
+
+   func testSyncDownLarge() {
+      setupZone()
+      var recordInfos = [(type: String, info: [String: CKRecordValue])]()
+      for index in 0..<1000 {
+         recordInfos.append((type: "Entry", info: ["text" : "\(index)" as CKRecordValue]))
+      }
+      let pushedRecords = pushRecords(records: recordInfos)
+
+      addStore()
+      store?.triggerSync(.storeAdded)
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1000)
+
+      let zone = CKRecordZone.ID(zoneName: zoneString!,
+                                 ownerName: CKCurrentUserDefaultName)
+      let pushedIDs: Set<CKRecord.ID> = Set<CKRecord.ID>(pushedRecords.map { $0.recordID })
+      var backingIDs = [CKRecord.ID]()
+      for result in results ?? [] {
+         if let backingID = try? self.store?.backingObject(for: result).ckRecordID(zone: zone),
+            pushedIDs.contains(backingID)
+         {
+            backingIDs.append(backingID)
+         }
+      }
+
+      XCTAssertEqual(pushedRecords.count, backingIDs.count)
    }
 }
