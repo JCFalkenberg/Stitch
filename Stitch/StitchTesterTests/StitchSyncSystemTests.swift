@@ -26,6 +26,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
    static let doesntNeedSetupBefore: [Selector] = [
       #selector(testSyncDown),
+      #selector(testSyncDownRelationship),
       #selector(testSyncDownLarge),
       #selector(testAsyncDataDownload)
    ]
@@ -195,6 +196,37 @@ class StitchSyncSystemTests: StitchTesterRoot {
       }
    }
 
+   func testSyncDownRelationship() {
+      setupZone()
+      let zone = CKRecordZone.ID(zoneName: zoneString!,
+                                 ownerName: CKCurrentUserDefaultName)
+      let locationRecordID = CKRecord.ID(recordName: UUID().uuidString,
+                                         zoneID: zone)
+      _ = pushRecords(records: [
+         RecordInfo(type: "Entry",
+                    info: ["location": CKRecord.Reference(recordID: locationRecordID,
+                                                          action: .none)]),
+         RecordInfo(type: "Location",
+                    info: ["displayName": "A Test" as CKRecordValue],
+                    recordID: locationRecordID)
+         ])
+
+      addStore()
+      store?.triggerSync(.storeAdded)
+      awaitSync()
+
+      let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1)
+      guard let entry = results?.first else {
+         XCTFail("hrm..")
+         return
+      }
+      XCTAssertNotNil(entry.location)
+      XCTAssertEqual(entry.location?.displayName, "A Test")
+   }
+
    func testLocalDelete() {
       guard let entry = addEntryAndSave() else {
          XCTFail("No entry created")
@@ -257,8 +289,8 @@ class StitchSyncSystemTests: StitchTesterRoot {
       try? testData.write(to: tempURL, options: [.atomic])
       let asset = CKAsset(fileURL: tempURL)
       
-      let pushed = pushRecords(records: [RecordInfo(type: "AllTypes",
-                                                    info: ["externalData": asset])])
+      _ = pushRecords(records: [RecordInfo(type: "AllTypes",
+                                           info: ["externalData": asset])])
 
       addStore()
       store?.triggerSync(.storeAdded)
