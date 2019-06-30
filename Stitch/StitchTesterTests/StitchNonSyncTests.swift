@@ -1,6 +1,6 @@
 //
-//  StitchTesterTests.swift
-//  StitchTesterTests
+//  StitchNonSyncTests.swift
+//  StitchNonSyncTests
 //
 //  Created by Elizabeth Siemer on 6/20/19.
 //  Copyright © 2019 Dark Chocolate Software, LLC. All rights reserved.
@@ -11,7 +11,7 @@ import CoreData
 import CloudKit
 @testable import Stitch
 
-class StitchTesterTests: StitchTesterRoot {
+class StitchNonSyncTests: StitchTesterRoot {
    override var storeOptions: [String : Any] {
       return [
          StitchStore.Options.BackingStoreType: NSInMemoryStoreType,
