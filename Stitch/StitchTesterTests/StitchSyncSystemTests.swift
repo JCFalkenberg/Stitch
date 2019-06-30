@@ -371,4 +371,34 @@ class StitchSyncSystemTests: StitchTesterRoot {
       XCTAssertNotNil(results)
       XCTAssertEqual(results?.count, 2)
    }
+
+   func testRequestProperties() {
+      let entry = addEntryAndSave()
+      awaitSync()
+
+      let request = NSFetchRequest<NSDictionary>(entityName: "Entry")
+
+      request.resultType = .dictionaryResultType
+      request.propertiesToFetch = [Entry.entity().propertiesByName["text"] ?? "text"]
+
+      let results = try? context?.fetch(request as NSFetchRequest<NSDictionary>)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1)
+      XCTAssertEqual(results?.first?["text"] as? String, entry?.text)
+   }
+   func testPropertiesToGroupBy() {
+      let entry = addEntryAndSave()
+      awaitSync()
+
+      let request = NSFetchRequest<NSDictionary>(entityName: "Entry")
+
+      request.resultType = .dictionaryResultType
+      request.propertiesToFetch = [Entry.entity().propertiesByName["text"] ?? "text"]
+      request.propertiesToGroupBy = [Entry.entity().propertiesByName["text"] ?? "text"]
+
+      let results = try? context?.fetch(request as NSFetchRequest<NSDictionary>)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1)
+      XCTAssertEqual(results?.first?["text"] as? String, entry?.text)
+   }
 }

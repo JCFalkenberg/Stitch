@@ -42,7 +42,7 @@ extension NSFetchRequest {
       if let properties = propertiesToFetch as? [NSPropertyDescription] {
          request.propertiesToFetch = store.backingModel?.backingProperties(for: properties, on: entity) ?? []
       }
-      if let groupProperties = propertiesToFetch as? [NSPropertyDescription] {
+      if let groupProperties = propertiesToGroupBy as? [NSPropertyDescription] {
          request.propertiesToGroupBy = store.backingModel?.backingProperties(for: groupProperties, on: entity) ?? []
       }
       request.shouldRefreshRefetchedObjects = shouldRefreshRefetchedObjects
