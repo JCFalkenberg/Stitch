@@ -313,7 +313,6 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
       context?.refresh(first, mergeChanges: false)
       XCTAssertEqual(first.externalData, testData)
-
    }
 
    func testEntityResync() {
@@ -324,5 +323,52 @@ class StitchSyncSystemTests: StitchTesterRoot {
       store?.redownloadObjectsForMigratedEnttiies()
 
       awaitSync()
+   }
+
+   func testSyncConflictServerWins() {
+      guard let entry = addEntryAndSave() else {
+         XCTFail("no entry! fail.")
+         return
+      }
+      awaitSync()
+
+      guard let record = try? store?.ckRecordForOutwardObject(entry) else {
+         XCTFail("No record? Fail")
+         return
+      }
+      _ = pushRecords(deletedIDs: [record.recordID])
+
+      entry.text = "Oh hai, be gay due crimze"
+      _ = addEntryAndSave()
+      awaitSync()
+
+      let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1)
+   }
+
+   func testSyncConflictClientWins() {
+      store?.conflictPolicy = .clientWins
+      guard let entry = addEntryAndSave() else {
+         XCTFail("no entry! fail.")
+         return
+      }
+      awaitSync()
+
+      guard let record = try? store?.ckRecordForOutwardObject(entry) else {
+         XCTFail("No record? Fail")
+         return
+      }
+      _ = pushRecords(deletedIDs: [record.recordID])
+
+      entry.text = "Oh hai, be gay due crimze"
+      _ = addEntryAndSave()
+      awaitSync()
+
+      let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 2)
    }
 }
