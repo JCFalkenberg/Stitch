@@ -122,7 +122,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       save()
       return entry
    }
-   func addLocationAndSave() -> Location? {
+   func addLocation() -> Location? {
       guard let context = context else {
          XCTFail("Context should not be nil")
          return nil
@@ -130,7 +130,10 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
 
       let location = Location(entity: Location.entity(), insertInto: context)
       location.displayName = "Home"
-
+      return location
+   }
+   func addLocationAndSave() -> Location? {
+      let location = addLocation()
       save()
       return location
    }

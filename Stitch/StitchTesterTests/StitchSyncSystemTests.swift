@@ -188,4 +188,29 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
       XCTAssertEqual(pushedRecords.count, backingIDs.count)
    }
+
+   func testPushRelationship() {
+      let entry = addEntry()
+      let location = addLocation()
+      entry?.location = location
+      save()
+
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+
+      pullChanges { (syncResults) in
+         XCTAssertEqual(syncResults.changedInserted.count, 2)
+         guard let entryRecord = syncResults.changedInserted.first(where: { $0.recordType == "Entry" }),
+            let locationRecord = syncResults.changedInserted.first(where: { $0.recordType == "Location" }) else
+         {
+            XCTFail("Need an entry and a location record both")
+            return
+         }
+         XCTAssert(entryRecord.value(forKey: "location") is CKRecord.Reference)
+         XCTAssertEqual((entryRecord.value(forKey: "location") as? CKRecord.Reference)?.recordID, locationRecord.recordID)
+      }
+   }
 }
