@@ -93,6 +93,12 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       super.tearDown()
    }
 
+   func awaitSync() {
+      syncExpectation = XCTestExpectation(description: "Sync Happened")
+      if let expectation = syncExpectation {
+         wait(for: [expectation], timeout: 30.0)
+      }
+   }
    var syncExpectation: XCTestExpectation? = nil
    func syncNotification(_ note: Notification) {
       if note.name == StitchStore.Notifications.DidFinishSync {
@@ -203,7 +209,12 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       wait(for: [expectation], timeout: 10.0)
    }
 
-   func pushRecords(records: [(type: String, info: [String: CKRecordValue])] = [],
+   struct RecordInfo {
+      let type: String
+      let info: [String: CKRecordValue]
+      var recordID: CKRecord.ID? = nil
+   }
+   func pushRecords(records: [RecordInfo] = [],
                     deletedIDs: [CKRecord.ID] = []) -> [CKRecord]
    {
       let expectation = XCTestExpectation(description: "Zone push")
@@ -211,8 +222,8 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
                                  ownerName: CKCurrentUserDefaultName)
       let records: [CKRecord] = records.map {
          let record = CKRecord(recordType: $0.type,
-                               recordID: CKRecord.ID(recordName: UUID().uuidString,
-                                                     zoneID: zone))
+                               recordID: $0.recordID ?? CKRecord.ID(recordName: UUID().uuidString,
+                                                                    zoneID: zone))
          record.setValuesForKeys($0.info)
          return record
       }
@@ -230,12 +241,13 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
          expectation.fulfill()
       }
       operationQueue.addOperation(operation)
-      wait(for: [expectation], timeout: 10.0)
+      wait(for: [expectation], timeout: 30.0)
       return records
    }
 
    func pushRecord(_ type: String, info: [String: CKRecordValue]) -> CKRecord {
-      return pushRecords(records: [(type: type, info: info)]).first!
+      return pushRecords(records: [RecordInfo(type: type,
+                                              info: info)]).first!
    }
 
    func pushEntry() -> CKRecord {

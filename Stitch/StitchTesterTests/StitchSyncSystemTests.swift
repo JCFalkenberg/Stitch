@@ -17,7 +17,8 @@ class StitchSyncSystemTests: StitchTesterRoot {
          StitchStore.Options.ConnectionStatusDelegate: self,
          StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true),
          StitchStore.Options.ZoneNameOption: zoneString!,
-         StitchStore.Options.SubscriptionNameOption: zoneString!
+         StitchStore.Options.SubscriptionNameOption: zoneString!,
+         StitchStore.Options.ExcludedUnchangingAsyncAssetKeys: ["externalData"]
       ]
    }
 
@@ -25,7 +26,8 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
    static let doesntNeedSetupBefore: [Selector] = [
       #selector(testSyncDown),
-      #selector(testSyncDownLarge)
+      #selector(testSyncDownLarge),
+      #selector(testAsyncDataDownload)
    ]
 
    static let doesntNeedTearDownAfter: [Selector] = [
@@ -57,11 +59,9 @@ class StitchSyncSystemTests: StitchTesterRoot {
    }
 
    func testStoreReady() {
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
       store?.triggerSync(.storeAdded)
 
-      guard let expectation = syncExpectation else { return }
-      wait(for: [expectation], timeout: 10.0)
+      awaitSync()
    }
 
    func testPushChanges() {
@@ -69,11 +69,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
          XCTFail("Failed to add entry")
          return
       }
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 10.0)
-      }
+      awaitSync()
 
       let record = try? store?.ckRecordForOutwardObject(entry)
 
@@ -96,11 +92,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
       addStore()
       store?.triggerSync(.storeAdded)
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 10.0)
-      }
+      awaitSync()
 
       let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
       let results = try? context?.fetch(fetch)
@@ -126,11 +118,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
       }
       save()
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       let zone = CKRecordZone.ID(zoneName: zoneString!,
                                  ownerName: CKCurrentUserDefaultName)
@@ -154,20 +142,17 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
    func testSyncDownLarge() {
       setupZone()
-      var recordInfos = [(type: String, info: [String: CKRecordValue])]()
+      var recordInfos = [RecordInfo]()
       for index in 0..<1000 {
-         recordInfos.append((type: "Entry", info: ["text" : "\(index)" as CKRecordValue]))
+         recordInfos.append(RecordInfo(type: "Entry",
+                                       info: ["text" : "\(index)" as CKRecordValue]))
       }
       let pushedRecords = pushRecords(records: recordInfos)
 
       addStore()
       store?.triggerSync(.storeAdded)
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
       let results = try? context?.fetch(fetch)
@@ -195,11 +180,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
       entry?.location = location
       save()
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       pullChanges { (syncResults) in
          XCTAssertEqual(syncResults.changedInserted.count, 2)
@@ -220,11 +201,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
          return
       }
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       guard let recordID = try? store?.ckRecordForOutwardObject(entry)?.recordID else {
          XCTFail("Unable to retrieve record ID")
@@ -233,11 +210,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
       context?.delete(entry)
       save()
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       pullChanges { (syncResults) in
          XCTAssertEqual(syncResults.changedInserted.count, 0)
@@ -253,11 +226,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
          return
       }
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       guard let recordID = try? store?.ckRecordForOutwardObject(entry)?.recordID else {
          XCTFail("Unable to retrieve record ID")
@@ -268,15 +237,50 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
       store?.triggerSync(.push)
 
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
+      awaitSync()
 
       let fetch = Entry.fetchRequest() as NSFetchRequest<Entry>
       let results = try? context?.fetch(fetch)
       XCTAssertNotNil(results)
       XCTAssertEqual(results?.count, 0)
+   }
+
+   func testAsyncDataDownload() {
+      setupZone()
+
+      let testData = Data([0x61, 0x6e, 0x64, 0x61, 0x74, 0x61, 0x30, 0x31])
+
+      var tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
+      tempURL = tempURL.appendingPathComponent("CKAssetTemp")
+      try? FileManager.default.createDirectory(at: tempURL, withIntermediateDirectories: true, attributes: nil)
+      tempURL = tempURL.appendingPathComponent(UUID().uuidString)
+      try? testData.write(to: tempURL, options: [.atomic])
+      let asset = CKAsset(fileURL: tempURL)
+      
+      let pushed = pushRecords(records: [RecordInfo(type: "AllTypes",
+                                                    info: ["externalData": asset])])
+
+      addStore()
+      store?.triggerSync(.storeAdded)
+
+      awaitSync()
+
+      let fetch = AllTypes.fetchRequest() as NSFetchRequest<AllTypes>
+      let results = try? context?.fetch(fetch)
+      XCTAssertNotNil(results)
+      XCTAssertEqual(results?.count, 1)
+      guard let first = results?.first else {
+         XCTFail("No first result? weird")
+         return
+      }
+      XCTAssertNil(first.externalData)
+
+      store?.downloadAssetsForOutwardObjects([first])
+
+      awaitSync()
+
+      context?.refresh(first, mergeChanges: false)
+      XCTAssertEqual(first.externalData, testData)
+
    }
 }
