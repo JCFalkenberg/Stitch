@@ -408,4 +408,35 @@ class StitchSyncSystemTests: StitchTesterRoot {
       awaitSync()
       awaitSync()
    }
+
+   var remoteNotificationTestInfo: [String: Any] {
+      return [
+         "ck": [
+            "ce": 1,
+            "cid": "iCloud.com.darkchocolatesoftware.Annals",
+            "fet": [
+               "dbs": 1,
+               "sid": store!.subscriptionName,
+               "zid": store!.zoneID.zoneName
+            ],
+            "nid": "00b2651f-5e1c-483b-b041-e09cca13b330"
+         ],
+         "aps": [
+            "alert": "",
+            "content-available": 1
+         ]
+      ]
+   }
+
+   func testPushUserInfo() {
+      //This is sort of fragile, but it should help
+      XCTAssert(store?.isOurPushNotification(remoteNotificationTestInfo) ?? false)
+   }
+
+   func testHandleUserInfo() {
+      //This is sort of fragile, but it should help
+      store?.handlePush(userInfo: remoteNotificationTestInfo)
+      awaitSync()
+   }
+
 }
