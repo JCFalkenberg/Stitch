@@ -12,10 +12,9 @@ import CoreData
 @testable import Stitch
 
 class StitchCloudKitTests: StitchTesterRoot {
-   override var internetConnectionAvailable: Bool { return true }
-
    override func setUp() {
       super.setUp()
+      internetConnectionAvailable = true
       if invocation?.selector == #selector(testSetup) {
          // The rest of this will be done in the testSetup() itself
          return

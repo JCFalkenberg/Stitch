@@ -46,6 +46,8 @@
 /* Begin PBXFileReference section */
 		B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchCloudKitTests.swift; sourceTree = "<group>"; };
 		B943BA3722C534D900EC9547 /* StitchTesterRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchTesterRoot.swift; sourceTree = "<group>"; };
+		B9C4FC4022CAA35400E34B3C /* TestModel2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TestModel2.xcdatamodel; sourceTree = "<group>"; };
+		B9C4FC4122CAA37B00E34B3C /* TestModel3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TestModel3.xcdatamodel; sourceTree = "<group>"; };
 		B9C7570E22BC802A0086163A /* StitchTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StitchTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C7571122BC802A0086163A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B9C7571322BC802C0086163A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -515,6 +517,8 @@
 		B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				B9C4FC4122CAA37B00E34B3C /* TestModel3.xcdatamodel */,
+				B9C4FC4022CAA35400E34B3C /* TestModel2.xcdatamodel */,
 				B9CDF08322BD18F5004A52D3 /* TestModel.xcdatamodel */,
 			);
 			currentVersion = B9CDF08322BD18F5004A52D3 /* TestModel.xcdatamodel */;

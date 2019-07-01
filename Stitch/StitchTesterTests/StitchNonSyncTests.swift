@@ -20,8 +20,6 @@ class StitchNonSyncTests: StitchTesterRoot {
       ]
    }
 
-   override var internetConnectionAvailable: Bool { return false }
-
    override func setUp() {
       super.setUp()
       addStore()

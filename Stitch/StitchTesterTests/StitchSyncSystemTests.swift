@@ -18,17 +18,18 @@ class StitchSyncSystemTests: StitchTesterRoot {
          StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true),
          StitchStore.Options.ZoneNameOption: zoneString!,
          StitchStore.Options.SubscriptionNameOption: zoneString!,
-         StitchStore.Options.ExcludedUnchangingAsyncAssetKeys: ["externalData"]
+         StitchStore.Options.ExcludedUnchangingAsyncAssetKeys: ["externalData"],
+         NSInferMappingModelAutomaticallyOption: NSNumber(value: true),
+         NSMigratePersistentStoresAutomaticallyOption: NSNumber(value: true)
       ]
    }
-
-   override var internetConnectionAvailable: Bool { return true }
 
    static let doesntNeedSetupBefore: [Selector] = [
       #selector(testSyncDown),
       #selector(testSyncDownRelationship),
       #selector(testSyncDownLarge),
-      #selector(testAsyncDataDownload)
+      #selector(testAsyncDataDownload),
+      #selector(testSingleModelUpgrade)
    ]
 
    static let doesntNeedTearDownAfter: [Selector] = [
@@ -36,6 +37,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
 
    override func setUp() {
       super.setUp()
+      internetConnectionAvailable = true
       guard let selector = invocation?.selector else {
          XCTFail("No invocation")
          return
@@ -437,6 +439,64 @@ class StitchSyncSystemTests: StitchTesterRoot {
       //This is sort of fragile, but it should help
       store?.handlePush(userInfo: remoteNotificationTestInfo)
       awaitSync()
+   }
+
+   func testSingleModelUpgrade() {
+      internetConnectionAvailable = false
+      addStore()
+      removeStore()
+
+      let bundle = Bundle(for: StitchSyncSystemTests.self)
+      guard let url = bundle.url(forResource: "TestModel",
+                                 withExtension: "momd")?.appendingPathComponent("TestModel2.mom")
+         else
+      {
+         XCTFail("didnt find model")
+         return
+      }
+      addStore(url)
+      XCTAssertEqual(store?.changedEntitesToMigrate.count, 1)
+      XCTAssert(store?.changedEntitesToMigrate.elementsEqual(["Entry"]) ?? false)
+      internetConnectionAvailable = true
+      store?.triggerSync(.networkState)
+      awaitSync() //Sync
+      awaitSync() //Entity redownload
+      XCTAssertEqual(store?.changedEntitesToMigrate.count, 0)
+   }
+
+   func testDoubleUpgradeStore() {
+      internetConnectionAvailable = false
+      addStore()
+      removeStore()
+
+      let bundle = Bundle(for: StitchSyncSystemTests.self)
+      guard let url2 = bundle.url(forResource: "TestModel",
+                                  withExtension: "momd")?.appendingPathComponent("TestModel2.mom")
+         else
+      {
+         XCTFail("didnt find model")
+         return
+      }
+      addStore(url2)
+      removeStore()
+
+      guard let url3 = bundle.url(forResource: "TestModel",
+                                  withExtension: "momd")?.appendingPathComponent("TestModel3.mom")
+         else
+      {
+         XCTFail("didnt find model")
+         return
+      }
+      addStore(url3)
+
+      XCTAssertEqual(store?.changedEntitesToMigrate.count, 2)
+      XCTAssert(store?.changedEntitesToMigrate.contains("Entry") ?? false)
+      XCTAssert(store?.changedEntitesToMigrate.contains("Shelf") ?? false)
+      internetConnectionAvailable = true
+      store?.triggerSync(.networkState)
+      awaitSync() //Sync
+      awaitSync() //Entity redownload
+      XCTAssertEqual(store?.changedEntitesToMigrate.count, 0)
    }
 
 }

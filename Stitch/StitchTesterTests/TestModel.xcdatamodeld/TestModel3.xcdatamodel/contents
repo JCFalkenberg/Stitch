@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14838.19" systemVersion="18F132" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="NO" userDefinedModelVersionIdentifier="">
+    <entity name="AllTypes" representedClassName="AllTypes" syncable="YES" codeGenerationType="class">
+        <attribute name="binaryData" optional="YES" attributeType="Binary"/>
+        <attribute name="boolean" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="decimal" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="double" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="externalData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="float" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="int16" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="int32" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="int64" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="string" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Book" representedClassName="Book" syncable="YES" codeGenerationType="class">
+        <attribute name="bookName" optional="YES" attributeType="String"/>
+        <relationship name="recipes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Recipe" inverseName="books" inverseEntity="Recipe"/>
+    </entity>
+    <entity name="Entry" representedClassName="Entry" syncable="YES" codeGenerationType="class">
+        <attribute name="creationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <relationship name="location" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Location" inverseName="entries" inverseEntity="Location"/>
+        <relationship name="tagLinks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="EntryTagLink" inverseName="entries" inverseEntity="EntryTagLink"/>
+    </entity>
+    <entity name="EntryTagLink" representedClassName="EntryTagLink" syncable="YES" codeGenerationType="class">
+        <relationship name="entries" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Entry" inverseName="tagLinks" inverseEntity="Entry"/>
+        <relationship name="tags" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Tag" inverseName="entryLinks" inverseEntity="Tag"/>
+    </entity>
+    <entity name="Location" representedClassName="Location" syncable="YES" codeGenerationType="class">
+        <attribute name="displayName" optional="YES" attributeType="String"/>
+        <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Entry" inverseName="location" inverseEntity="Entry"/>
+    </entity>
+    <entity name="Recipe" representedClassName="Recipe" syncable="YES" codeGenerationType="class">
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <relationship name="books" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Book" inverseName="recipes" inverseEntity="Book"/>
+        <relationship name="steps" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Step"/>
+    </entity>
+    <entity name="Shelf" representedClassName="Shelf" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Step" representedClassName="Step" syncable="YES" codeGenerationType="class">
+        <attribute name="text" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Tag" representedClassName="Tag" syncable="YES" codeGenerationType="class">
+        <attribute name="tagName" optional="YES" attributeType="String"/>
+        <relationship name="entryLinks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="EntryTagLink" inverseName="tags" inverseEntity="EntryTagLink"/>
+    </entity>
+    <configuration name="Failure" usedWithCloudKit="NO">
+        <memberEntity name="Book"/>
+        <memberEntity name="Recipe"/>
+        <memberEntity name="Step"/>
+    </configuration>
+    <configuration name="Success" usedWithCloudKit="NO">
+        <memberEntity name="Entry"/>
+        <memberEntity name="EntryTagLink"/>
+        <memberEntity name="Tag"/>
+        <memberEntity name="Location"/>
+        <memberEntity name="AllTypes"/>
+        <memberEntity name="Shelf"/>
+    </configuration>
+    <elements>
+        <element name="AllTypes" positionX="-230.6328125" positionY="-20.72265625" width="128" height="208"/>
+        <element name="Book" positionX="258.9453125" positionY="216.90625" width="128" height="73"/>
+        <element name="Entry" positionX="-63" positionY="-18" width="128" height="103"/>
+        <element name="EntryTagLink" positionX="144" positionY="18" width="128" height="73"/>
+        <element name="Location" positionX="-60.109375" positionY="129.703125" width="128" height="73"/>
+        <element name="Recipe" positionX="-9.796875" positionY="263.73046875" width="128" height="88"/>
+        <element name="Step" positionX="-9.203125" positionY="396.453125" width="128" height="58"/>
+        <element name="Tag" positionX="341.5546875" positionY="-17.8515625" width="128" height="73"/>
+        <element name="Shelf" positionX="-27" positionY="135" width="128" height="58"/>
+    </elements>
+</model>

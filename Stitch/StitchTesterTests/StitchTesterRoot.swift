@@ -18,7 +18,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
    var store: StitchStore? = nil
    var zoneString: String? = nil
 
-   var internetConnectionAvailable: Bool { return false }
+   var internetConnectionAvailable: Bool = false
    var operationQueue = OperationQueue()
 
    var storeOptions: [String: Any] {
@@ -38,9 +38,15 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       zoneString = "CloudKitTestsZone\(NSStringFromSelector(selector))"
    }
 
-   func addStore() {
+   func addStore(_ modelURL: URL? = nil) {
       do {
-         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
+         if let modelURL = modelURL,
+            let model = NSManagedObjectModel(contentsOf: modelURL)
+         {
+            coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
+         } else {
+            coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
+         }
 
          var storeURL = URL(fileURLWithPath: NSTemporaryDirectory())
          storeURL.appendPathComponent("\(zoneString!).test")
