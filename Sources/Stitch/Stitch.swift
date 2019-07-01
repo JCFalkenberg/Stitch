@@ -446,18 +446,6 @@ public class StitchStore: NSIncrementalStore {
       return objectID
    }
 
-   internal func objectIDForBackingObjectForEntity(_ entityName: String,
-                                                      withReferenceObject referenceObject: String?) throws -> NSManagedObjectID?
-   {
-      guard let referenceObject = referenceObject else { return nil }
-      let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObjectID>(entityName: entityName)
-      fetchRequest.resultType = NSFetchRequestResultType.managedObjectIDResultType
-      fetchRequest.fetchLimit = 1
-      fetchRequest.predicate = NSPredicate(backingReferenceID: referenceObject)
-      let results = try backingMOC.fetch(fetchRequest)
-      return results.last
-   }
-
    func backingObject(for outward: NSManagedObject) throws -> NSManagedObject {
       try outward.managedObjectContext?.obtainPermanentIDs(for: [outward])
       guard let reference = referenceObject(for: outward.objectID) as? String else { throw StitchStore.StitchStoreError.invalidReferenceObject }

@@ -401,4 +401,11 @@ class StitchSyncSystemTests: StitchTesterRoot {
       XCTAssertEqual(results?.count, 1)
       XCTAssertEqual(results?.first?["text"] as? String, entry?.text)
    }
+
+   func testMultipleSyncs() {
+      _ = addEntryAndSave()
+      store?.triggerSync(.push)
+      awaitSync()
+      awaitSync()
+   }
 }
