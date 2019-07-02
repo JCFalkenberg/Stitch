@@ -10,7 +10,6 @@ Stitch like it's namesake has some prickly parts to be aware of right off the ba
 * It doesn't suport public CloudKit databases.
 * It doesn't support CloudKit shared private databases.
 * It doesn't support direct many to many relationships, but you can work around this by building a linking table entity.
-* It doesn't support batch oerations
 * It doesn't support the store version system
 * It doesn't support ordered relationships
 * Migrations involving renaming or changing properties, entities, or relationships
@@ -19,7 +18,7 @@ Stitch like it's namesake has some prickly parts to be aware of right off the ba
 * When sync finishes, you must integrate those changes in to your UI.
 * Conflict resolution has been simplified to either server or local record wins.
 
-It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense (for instance I do plan on adding support for batch operations)
+It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense
 
 ## What does it do then?
 

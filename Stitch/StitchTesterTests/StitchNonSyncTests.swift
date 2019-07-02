@@ -345,4 +345,114 @@ class StitchNonSyncTests: StitchTesterRoot {
       XCTAssertNotNil(value.first)
       XCTAssertEqual(value.first?.uriRepresentation(), entry.objectID.uriRepresentation())
    }
+
+   func testBatchUpdate() {
+      _ = addEntryAndSave()
+      let batch = NSBatchUpdateRequest(entityName: "Entry")
+      batch.resultType = .statusOnlyResultType
+      batch.propertiesToUpdate = ["text": "haihai"]
+      guard let result = try? context?.execute(batch) as? NSBatchUpdateResult else {
+         XCTFail("result not found")
+         return
+      }
+
+      XCTAssertEqual(result.resultType, .statusOnlyResultType)
+      XCTAssert(result.result as? Bool ?? false)
+
+      let changeSets = store?.insertedAndUpdatedChangeSets(store!.backingMOC)
+      XCTAssertEqual(changeSets?.count, 2)
+   }
+   func testBatchUpdateObjectResults() {
+      let entry = addEntryAndSave()
+      let batch = NSBatchUpdateRequest(entityName: "Entry")
+      batch.resultType = .updatedObjectIDsResultType
+      batch.propertiesToUpdate = ["text": "haihai"]
+      guard let result = try? context?.execute(batch) as? NSBatchUpdateResult else {
+         XCTFail("result not found")
+         return
+      }
+
+      XCTAssertEqual(result.resultType, .updatedObjectIDsResultType)
+      XCTAssertNotNil(result.result as? [NSManagedObjectID])
+      let results = result.result as? [NSManagedObjectID]
+      XCTAssertEqual(results?.count, 1)
+      XCTAssertEqual(entry?.objectID.uriRepresentation(), results?.first?.uriRepresentation())
+
+      let changeSets = store?.insertedAndUpdatedChangeSets(store!.backingMOC)
+      XCTAssertEqual(changeSets?.count, 2)
+}
+   func testBatchUpdateIDResults() {
+      _ = addEntryAndSave()
+      let batch = NSBatchUpdateRequest(entityName: "Entry")
+      batch.resultType = .updatedObjectsCountResultType
+      batch.propertiesToUpdate = ["text": "haihai"]
+      guard let result = try? context?.execute(batch) as? NSBatchUpdateResult else {
+         XCTFail("result not found")
+         return
+      }
+
+      XCTAssertEqual(result.resultType, .updatedObjectsCountResultType)
+      XCTAssertNotNil(result.result as? Int)
+      let resultCount = result.result as? Int
+      XCTAssertEqual(resultCount, 1)
+
+      let changeSets = store?.insertedAndUpdatedChangeSets(store!.backingMOC)
+      XCTAssertEqual(changeSets?.count, 2)
+   }
+
+   func testBatchDelete() {
+      _ = addEntryAndSave()
+      let request: NSFetchRequest<NSFetchRequestResult> = Entry.fetchRequest()
+      let batch = NSBatchDeleteRequest(fetchRequest: request)
+      batch.resultType = .resultTypeStatusOnly
+
+      guard let result = try? context?.execute(batch) as? NSBatchDeleteResult else {
+         XCTFail("result not found")
+         return
+      }
+
+      XCTAssertEqual(result.resultType, .resultTypeStatusOnly)
+      XCTAssert(result.result as? Bool ?? false)
+
+      let changeSets = store?.deletedCKRecordIDs(store!.backingMOC)
+      XCTAssertEqual(changeSets?.count, 1)
+   }
+   func testBatchDeleteObjectResults() {
+      let entry = addEntryAndSave()
+      let request: NSFetchRequest<NSFetchRequestResult> = Entry.fetchRequest()
+      let batch = NSBatchDeleteRequest(fetchRequest: request)
+      batch.resultType = .resultTypeObjectIDs
+
+      guard let result = try? context?.execute(batch) as? NSBatchDeleteResult else {
+         XCTFail("result not found")
+         return
+      }
+
+      XCTAssertEqual(result.resultType, .resultTypeObjectIDs)
+      XCTAssertNotNil(result.result as? [NSManagedObjectID])
+      let results = result.result as? [NSManagedObjectID]
+      XCTAssertEqual(results?.first?.uriRepresentation(), entry?.objectID.uriRepresentation())
+
+      let changeSets = store?.deletedCKRecordIDs(store!.backingMOC)
+      XCTAssertEqual(changeSets?.count, 1)
+   }
+   func testBatchDeleteIDResults() {
+      _ = addEntryAndSave()
+      let request: NSFetchRequest<NSFetchRequestResult> = Entry.fetchRequest()
+      let batch = NSBatchDeleteRequest(fetchRequest: request)
+      batch.resultType = .resultTypeCount
+
+      guard let result = try? context?.execute(batch) as? NSBatchDeleteResult else {
+         XCTFail("result not found")
+         return
+      }
+
+      XCTAssertEqual(result.resultType, .resultTypeCount)
+      XCTAssertNotNil(result.result as? Int)
+      let resultCount = result.result as? Int
+      XCTAssertEqual(resultCount, 1)
+
+      let changeSets = store?.deletedCKRecordIDs(store!.backingMOC)
+      XCTAssertEqual(changeSets?.count, 1)
+   }
 }

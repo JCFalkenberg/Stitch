@@ -398,13 +398,19 @@ public class StitchStore: NSIncrementalStore {
       guard let context = context else { throw StitchStoreError.invalidRequest }
       var results: Any? = nil
       switch request.requestType {
+      case .batchUpdateRequestType:
+         guard let request = request as? NSBatchUpdateRequest else { throw StitchStoreError.invalidRequest }
+         results = try batchUpdate(request, context: context)
+      case .batchDeleteRequestType:
+         guard let request = request as? NSBatchDeleteRequest else { throw StitchStoreError.invalidRequest }
+         results = try batchDelete(request, context: context)
       case .fetchRequestType:
          guard let request = request as? NSFetchRequest<NSFetchRequestResult> else { throw StitchStoreError.invalidRequest }
          results = try fetch(request, context: context)
       case .saveRequestType:
          guard let request = request as? NSSaveChangesRequest else { throw StitchStoreError.invalidRequest }
          results = try save(request, context: context)
-      default: //In the future it would be nice to support batchUpdateRequestType and batchDeleteRequestType
+      @unknown default: //In the future it would be nice to support batchUpdateRequestType and batchDeleteRequestType
          throw StitchStoreError.invalidRequest
       }
 

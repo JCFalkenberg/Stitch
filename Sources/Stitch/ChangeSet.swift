@@ -16,11 +16,6 @@ class ChangeSet: NSManagedObject {
    @NSManaged public var sm_LocalStore_ChangeType: Int16
    @NSManaged public var sm_LocalStore_Queued: Bool
 
-   public var queued: Bool {
-      get { return sm_LocalStore_Queued }
-      set { sm_LocalStore_Queued = newValue }
-   }
-
    public var changeType: StitchStore.RecordChange {
       get {
          return StitchStore.RecordChange(rawValue: sm_LocalStore_ChangeType) ?? .noChange

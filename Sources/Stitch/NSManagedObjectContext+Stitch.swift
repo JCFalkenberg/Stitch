@@ -56,7 +56,7 @@ extension NSManagedObjectContext {
    }
 
 
-   func executeBatch(_ request: NSPersistentStoreRequest) throws -> NSPersistentStoreResult {
+   internal func executeBatch(_ request: NSPersistentStoreRequest) throws -> NSPersistentStoreResult {
       var hasOnlySQLiteStores = true
       for store in persistentStoreCoordinator?.persistentStores ?? [] {
          if store.type != NSSQLiteStoreType { hasOnlySQLiteStores = false }
@@ -87,7 +87,7 @@ extension NSManagedObjectContext {
          case .updatedObjectIDsResultType:
             result.theResult = objectsToChange.map { $0.objectID }
          case .updatedObjectsCountResultType:
-            result.theResult = objectsToChange
+            result.theResult = objectsToChange.count
          @unknown default:
             throw StitchStore.StitchStoreError.invalidRequest
          }
