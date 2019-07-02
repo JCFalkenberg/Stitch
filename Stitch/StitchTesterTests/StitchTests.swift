@@ -7,14 +7,15 @@
 //
 
 import XCTest
-import Cocoa
+import CoreData
 @testable import Stitch
 
 extension NSManagedObjectModel {
    /// The model will have a success and failure
    static var StitchTestsModel: NSManagedObjectModel = {
       let bundle = Bundle(for: StitchTests.self)
-      guard let url = bundle.url(forResource: "TestModel", withExtension: "momd") else { return NSManagedObjectModel() }
+      guard var url = bundle.url(forResource: "TestModel", withExtension: "momd") else { return NSManagedObjectModel() }
+      url.appendPathComponent("TestModel.mom")
       return NSManagedObjectModel(contentsOf: url) ?? NSManagedObjectModel()
    }()
 }
@@ -129,7 +130,11 @@ final class StitchTests: XCTestCase {
          let store = try coordinator.addPersistentStore(ofType: StitchStore.storeType,
                                                         configurationName: "Failure",
                                                         at: URL(fileURLWithPath: ""),
-                                                        options: [ StitchStore.Options.BackingStoreType : NSInMemoryStoreType ])
+                                                        options:
+            [
+               StitchStore.Options.BackingStoreType : NSInMemoryStoreType,
+               StitchStore.Options.CloudKitContainerIdentifier: CloudKitID
+            ])
          XCTAssertNil(store)
       } catch {
          if let error = error as? Stitch.StitchStore.StitchStoreError {

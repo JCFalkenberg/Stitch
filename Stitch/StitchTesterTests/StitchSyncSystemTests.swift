@@ -19,6 +19,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
          StitchStore.Options.ZoneNameOption: zoneString!,
          StitchStore.Options.SubscriptionNameOption: zoneString!,
          StitchStore.Options.ExcludedUnchangingAsyncAssetKeys: ["externalData"],
+         StitchStore.Options.CloudKitContainerIdentifier: CloudKitID,
          NSInferMappingModelAutomaticallyOption: NSNumber(value: true),
          NSMigratePersistentStoresAutomaticallyOption: NSNumber(value: true)
       ]
@@ -415,7 +416,7 @@ class StitchSyncSystemTests: StitchTesterRoot {
       return [
          "ck": [
             "ce": 1,
-            "cid": "iCloud.com.darkchocolatesoftware.Annals",
+            "cid": "iCloud.com.darkchocolatesoftware.StitchTester",
             "fet": [
                "dbs": 1,
                "sid": store!.subscriptionName,
@@ -496,7 +497,12 @@ class StitchSyncSystemTests: StitchTesterRoot {
       store?.triggerSync(.networkState)
       awaitSync() //Sync
       awaitSync() //Entity redownload
-      XCTAssertEqual(store?.changedEntitesToMigrate.count, 0)
+      let expectation = XCTestExpectation(description: "Expectation")
+      DispatchQueue.main.async {
+         XCTAssertEqual(self.store?.changedEntitesToMigrate.count, 0)
+         expectation.fulfill()
+      }
+      wait(for: [expectation], timeout: 1.0)
    }
 
 }

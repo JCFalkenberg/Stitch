@@ -16,7 +16,8 @@ class StitchNonSyncTests: StitchTesterRoot {
       return [
          StitchStore.Options.BackingStoreType: NSInMemoryStoreType,
          StitchStore.Options.ConnectionStatusDelegate: self,
-         StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true)
+         StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true),
+         StitchStore.Options.CloudKitContainerIdentifier: CloudKitID
       ]
    }
 

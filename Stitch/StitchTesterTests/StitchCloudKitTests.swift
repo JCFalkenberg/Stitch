@@ -37,6 +37,7 @@ class StitchCloudKitTests: StitchTesterRoot {
       let zoneExpectation = XCTestExpectation(description: "Zone fetch")
       let recordZoneID = CKRecordZone.ID(zoneName: zoneString!)
       let fetchZonesOp = CKFetchRecordZonesOperation(recordZoneIDs: [recordZoneID])
+      fetchZonesOp.database = CKContainer(identifier: CloudKitID).privateCloudDatabase
       fetchZonesOp.fetchRecordZonesCompletionBlock = { (zoneDict, error) in
          if let error = error as! CKError? {
             if exists {
@@ -63,6 +64,7 @@ class StitchCloudKitTests: StitchTesterRoot {
       let subscriptionExpectation = XCTestExpectation(description: "Subscription fetch")
       let subscriptionID = CKSubscription.ID(zoneString!)
       let fetchSubscriptionOp = CKFetchSubscriptionsOperation(subscriptionIDs: [subscriptionID])
+      fetchSubscriptionOp.database = CKContainer(identifier: CloudKitID).privateCloudDatabase
       fetchSubscriptionOp.fetchSubscriptionCompletionBlock = { (subscriptionDict, error) in
          if let error = error as! CKError? {
             if exists {
@@ -115,7 +117,7 @@ class StitchCloudKitTests: StitchTesterRoot {
                                  ownerName: CKCurrentUserDefaultName)
       let pullOperation = EntityDownloadOperationWrapper(entityName: "Entry",
                                                          keysToSync: nil,
-                                                         database: CKContainer.default().privateCloudDatabase,
+                                                         database: CKContainer(identifier: CloudKitID).privateCloudDatabase,
                                                          zone: zone)
       { (records, error) in
          if let error = error {

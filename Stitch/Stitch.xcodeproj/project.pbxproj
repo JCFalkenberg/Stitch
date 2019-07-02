@@ -18,6 +18,19 @@
 		B9D748F522BC8C420058EDB9 /* StitchNonSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D748F422BC8C420058EDB9 /* StitchNonSyncTests.swift */; };
 		B9EE702E22C428E700AFF960 /* StitchSyncSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */; };
 		B9F67BD922BCA5860092EEF1 /* StitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F67BD822BCA5860092EEF1 /* StitchTests.swift */; };
+		B9F9870222CB126A00E72151 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F9870122CB126A00E72151 /* AppDelegate.swift */; };
+		B9F9870422CB126A00E72151 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F9870322CB126A00E72151 /* SceneDelegate.swift */; };
+		B9F9870622CB126A00E72151 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F9870522CB126A00E72151 /* ViewController.swift */; };
+		B9F9870922CB126A00E72151 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9F9870722CB126A00E72151 /* Main.storyboard */; };
+		B9F9870B22CB126A00E72151 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9F9870A22CB126A00E72151 /* Assets.xcassets */; };
+		B9F9870E22CB126A00E72151 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9F9870C22CB126A00E72151 /* LaunchScreen.storyboard */; };
+		B9F9872122CB127F00E72151 /* StitchTesterRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B943BA3722C534D900EC9547 /* StitchTesterRoot.swift */; };
+		B9F9872222CB127F00E72151 /* StitchNonSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D748F422BC8C420058EDB9 /* StitchNonSyncTests.swift */; };
+		B9F9872322CB127F00E72151 /* StitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F67BD822BCA5860092EEF1 /* StitchTests.swift */; };
+		B9F9872422CB127F00E72151 /* StitchCloudKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */; };
+		B9F9872522CB127F00E72151 /* StitchSyncSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */; };
+		B9F9872622CB128500E72151 /* TestModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */; };
+		B9F9872822CB12B300E72151 /* Stitch in Frameworks */ = {isa = PBXBuildFile; productRef = B9F9872722CB12B300E72151 /* Stitch */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +40,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = B9C7570D22BC802A0086163A;
 			remoteInfo = StitchTester;
+		};
+		B9F9871522CB126B00E72151 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9C7570622BC802A0086163A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B9F986FE22CB126900E72151;
+			remoteInfo = "StitchTester-iOS";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -60,8 +80,19 @@
 		B9D748F222BC8C420058EDB9 /* StitchTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StitchTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9D748F422BC8C420058EDB9 /* StitchNonSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchNonSyncTests.swift; sourceTree = "<group>"; };
 		B9D748F622BC8C420058EDB9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B9E3028022CB14CB00816A50 /* StitchTester-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "StitchTester-iOS.entitlements"; sourceTree = "<group>"; };
 		B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchSyncSystemTests.swift; sourceTree = "<group>"; };
 		B9F67BD822BCA5860092EEF1 /* StitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchTests.swift; sourceTree = "<group>"; };
+		B9F986FF22CB126900E72151 /* StitchTester-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "StitchTester-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9F9870122CB126A00E72151 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B9F9870322CB126A00E72151 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		B9F9870522CB126A00E72151 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B9F9870822CB126A00E72151 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B9F9870A22CB126A00E72151 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B9F9870D22CB126A00E72151 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B9F9870F22CB126A00E72151 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B9F9871422CB126A00E72151 /* StitchTester-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StitchTester-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9F9871A22CB126B00E72151 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +112,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B9F986FC22CB126900E72151 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9F9872822CB12B300E72151 /* Stitch in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9F9871122CB126A00E72151 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -90,6 +136,8 @@
 				B9C7573022BC81E10086163A /* Stitch */,
 				B9C7571022BC802A0086163A /* Stitch */,
 				B9D748F322BC8C420058EDB9 /* StitchTesterTests */,
+				B9F9870022CB126A00E72151 /* StitchTester-iOS */,
+				B9F9871722CB126B00E72151 /* StitchTester-iOSTests */,
 				B9C7570F22BC802A0086163A /* Products */,
 				B9C7573922BC842D0086163A /* Frameworks */,
 			);
@@ -100,6 +148,8 @@
 			children = (
 				B9C7570E22BC802A0086163A /* StitchTester.app */,
 				B9D748F222BC8C420058EDB9 /* StitchTesterTests.xctest */,
+				B9F986FF22CB126900E72151 /* StitchTester-iOS.app */,
+				B9F9871422CB126A00E72151 /* StitchTester-iOSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -136,6 +186,29 @@
 				B9D748F622BC8C420058EDB9 /* Info.plist */,
 			);
 			path = StitchTesterTests;
+			sourceTree = "<group>";
+		};
+		B9F9870022CB126A00E72151 /* StitchTester-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				B9E3028022CB14CB00816A50 /* StitchTester-iOS.entitlements */,
+				B9F9870122CB126A00E72151 /* AppDelegate.swift */,
+				B9F9870322CB126A00E72151 /* SceneDelegate.swift */,
+				B9F9870522CB126A00E72151 /* ViewController.swift */,
+				B9F9870722CB126A00E72151 /* Main.storyboard */,
+				B9F9870A22CB126A00E72151 /* Assets.xcassets */,
+				B9F9870C22CB126A00E72151 /* LaunchScreen.storyboard */,
+				B9F9870F22CB126A00E72151 /* Info.plist */,
+			);
+			path = "StitchTester-iOS";
+			sourceTree = "<group>";
+		};
+		B9F9871722CB126B00E72151 /* StitchTester-iOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				B9F9871A22CB126B00E72151 /* Info.plist */,
+			);
+			path = "StitchTester-iOSTests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -180,6 +253,44 @@
 			productReference = B9D748F222BC8C420058EDB9 /* StitchTesterTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		B9F986FE22CB126900E72151 /* StitchTester-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B9F9871F22CB126B00E72151 /* Build configuration list for PBXNativeTarget "StitchTester-iOS" */;
+			buildPhases = (
+				B9F986FB22CB126900E72151 /* Sources */,
+				B9F986FC22CB126900E72151 /* Frameworks */,
+				B9F986FD22CB126900E72151 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "StitchTester-iOS";
+			packageProductDependencies = (
+				B9F9872722CB12B300E72151 /* Stitch */,
+			);
+			productName = "StitchTester-iOS";
+			productReference = B9F986FF22CB126900E72151 /* StitchTester-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B9F9871322CB126A00E72151 /* StitchTester-iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B9F9872022CB126B00E72151 /* Build configuration list for PBXNativeTarget "StitchTester-iOSTests" */;
+			buildPhases = (
+				B9F9871022CB126A00E72151 /* Sources */,
+				B9F9871122CB126A00E72151 /* Frameworks */,
+				B9F9871222CB126A00E72151 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B9F9871622CB126B00E72151 /* PBXTargetDependency */,
+			);
+			name = "StitchTester-iOSTests";
+			productName = "StitchTester-iOSTests";
+			productReference = B9F9871422CB126A00E72151 /* StitchTester-iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -196,6 +307,13 @@
 					B9D748F122BC8C420058EDB9 = {
 						CreatedOnToolsVersion = 11.0;
 						TestTargetID = B9C7570D22BC802A0086163A;
+					};
+					B9F986FE22CB126900E72151 = {
+						CreatedOnToolsVersion = 11.0;
+					};
+					B9F9871322CB126A00E72151 = {
+						CreatedOnToolsVersion = 11.0;
+						TestTargetID = B9F986FE22CB126900E72151;
 					};
 				};
 			};
@@ -214,6 +332,8 @@
 			targets = (
 				B9C7570D22BC802A0086163A /* StitchTester */,
 				B9D748F122BC8C420058EDB9 /* StitchTesterTests */,
+				B9F986FE22CB126900E72151 /* StitchTester-iOS */,
+				B9F9871322CB126A00E72151 /* StitchTester-iOSTests */,
 			);
 		};
 /* End PBXProject section */
@@ -229,6 +349,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B9D748F022BC8C420058EDB9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9F986FD22CB126900E72151 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9F9870E22CB126A00E72151 /* LaunchScreen.storyboard in Resources */,
+				B9F9870B22CB126A00E72151 /* Assets.xcassets in Resources */,
+				B9F9870922CB126A00E72151 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9F9871222CB126A00E72151 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -259,6 +396,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B9F986FB22CB126900E72151 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9F9870622CB126A00E72151 /* ViewController.swift in Sources */,
+				B9F9870222CB126A00E72151 /* AppDelegate.swift in Sources */,
+				B9F9870422CB126A00E72151 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9F9871022CB126A00E72151 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9F9872622CB128500E72151 /* TestModel.xcdatamodeld in Sources */,
+				B9F9872222CB127F00E72151 /* StitchNonSyncTests.swift in Sources */,
+				B9F9872522CB127F00E72151 /* StitchSyncSystemTests.swift in Sources */,
+				B9F9872322CB127F00E72151 /* StitchTests.swift in Sources */,
+				B9F9872422CB127F00E72151 /* StitchCloudKitTests.swift in Sources */,
+				B9F9872122CB127F00E72151 /* StitchTesterRoot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -266,6 +426,11 @@
 			isa = PBXTargetDependency;
 			target = B9C7570D22BC802A0086163A /* StitchTester */;
 			targetProxy = B9D748F722BC8C420058EDB9 /* PBXContainerItemProxy */;
+		};
+		B9F9871622CB126B00E72151 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B9F986FE22CB126900E72151 /* StitchTester-iOS */;
+			targetProxy = B9F9871522CB126B00E72151 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -276,6 +441,22 @@
 				B9C7571622BC802C0086163A /* Base */,
 			);
 			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		B9F9870722CB126A00E72151 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B9F9870822CB126A00E72151 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		B9F9870C22CB126A00E72151 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B9F9870D22CB126A00E72151 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -474,6 +655,96 @@
 			};
 			name = Release;
 		};
+		B9F9871B22CB126B00E72151 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "StitchTester-iOS/StitchTester-iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				INFOPLIST_FILE = "StitchTester-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B9F9871C22CB126B00E72151 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "StitchTester-iOS/StitchTester-iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				INFOPLIST_FILE = "StitchTester-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B9F9871D22CB126B00E72151 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				INFOPLIST_FILE = "StitchTester-iOSTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StitchTester-iOS.app/StitchTester-iOS";
+			};
+			name = Debug;
+		};
+		B9F9871E22CB126B00E72151 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				INFOPLIST_FILE = "StitchTester-iOSTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StitchTester-iOS.app/StitchTester-iOS";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -504,10 +775,32 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B9F9871F22CB126B00E72151 /* Build configuration list for PBXNativeTarget "StitchTester-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9F9871B22CB126B00E72151 /* Debug */,
+				B9F9871C22CB126B00E72151 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B9F9872022CB126B00E72151 /* Build configuration list for PBXNativeTarget "StitchTester-iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9F9871D22CB126B00E72151 /* Debug */,
+				B9F9871E22CB126B00E72151 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		B9C7574622BC866B0086163A /* Stitch */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Stitch;
+		};
+		B9F9872722CB12B300E72151 /* Stitch */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Stitch;
 		};

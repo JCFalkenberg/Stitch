@@ -11,6 +11,8 @@ import CoreData
 import CloudKit
 @testable import Stitch
 
+let CloudKitID = "iCloud.com.darkchocolatesoftware.StitchTester"
+
 class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
    var model: NSManagedObjectModel = NSManagedObjectModel.StitchTestsModel
    var coordinator: NSPersistentStoreCoordinator? = nil
@@ -25,7 +27,8 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       return [
          StitchStore.Options.BackingStoreType: NSInMemoryStoreType,
          StitchStore.Options.ConnectionStatusDelegate: self,
-         StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true)
+         StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true),
+         StitchStore.Options.CloudKitContainerIdentifier: CloudKitID
       ]
    }
 
@@ -57,19 +60,6 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
          XCTAssertNotNil(store)
          context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
          context?.persistentStoreCoordinator = coordinator
-
-         NotificationCenter.default.addObserver(self,
-                                                selector: #selector(syncNotification(_:)),
-                                                name: StitchStore.Notifications.DidFinishSync,
-                                                object: store)
-         NotificationCenter.default.addObserver(self,
-                                                selector: #selector(syncNotification(_:)),
-                                                name: StitchStore.Notifications.DidFailSync,
-                                                object: store)
-         NotificationCenter.default.addObserver(self,
-                                                selector: #selector(syncNotification(_:)),
-                                                name: StitchStore.Notifications.DidStartSync,
-                                                object: store)
       } catch {
          XCTFail("There was an error adding the persistent store \(error)")
       }
@@ -100,23 +90,10 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
    }
 
    func awaitSync() {
-      syncExpectation = XCTestExpectation(description: "Sync Happened")
-      if let expectation = syncExpectation {
-         wait(for: [expectation], timeout: 30.0)
-      }
-   }
-   var syncExpectation: XCTestExpectation? = nil
-   func syncNotification(_ note: Notification) {
-      if note.name == StitchStore.Notifications.DidFinishSync {
-         syncExpectation?.fulfill()
-      } else if note.name == StitchStore.Notifications.DidFailSync {
-         XCTFail("Failed sync! \(String(describing: note.userInfo))")
-         syncExpectation?.fulfill()
-      } else if note.name == StitchStore.Notifications.DidStartSync {
-         print("started")
-      } else {
-         XCTFail("Unexpected sync note")
-      }
+      let syncExpectation = XCTNSNotificationExpectation(name: StitchStore.Notifications.DidFinishSync,
+                                                         object: store)
+      syncExpectation.expectationDescription = "Waiting for sync"
+      wait(for: [syncExpectation], timeout: 30.0)
    }
 
    func addEntry() -> Entry? {
@@ -162,7 +139,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
 
       let zone = CKRecordZone(zoneID: CKRecordZone.ID(zoneName: zoneString!,
                                                       ownerName: CKCurrentUserDefaultName))
-      let database = CKContainer.default().privateCloudDatabase
+      let database = CKContainer(identifier: CloudKitID).privateCloudDatabase
 
       let setupOperation = CKModifyRecordZonesOperation(create: zone,
                                                         in: database)
@@ -197,7 +174,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
 
       let zone = CKRecordZone(zoneID: CKRecordZone.ID(zoneName: zoneString!,
                                                       ownerName: CKCurrentUserDefaultName))
-      let database = CKContainer.default().privateCloudDatabase
+      let database = CKContainer(identifier: CloudKitID).privateCloudDatabase
       StitchStore.destroyZone(zone: zone,
                               in: database,
                               on: operationQueue)
@@ -235,7 +212,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       }
       let operation = SyncPushOperation(insertedOrUpdated: records,
                                         deletedIDs: deletedIDs,
-                                        database: CKContainer.default().privateCloudDatabase)
+                                        database: CKContainer(identifier: CloudKitID).privateCloudDatabase)
       { (result) in
          switch result {
          case .success(_):
@@ -264,7 +241,7 @@ class StitchTesterRoot: XCTestCase, StitchConnectionStatus {
       let expectation = XCTestExpectation(description: "Test pull changes")
       let pullOperation = FetchChangesOperation(changesFor: CKRecordZone.ID(zoneName: zoneString!,
                                                                             ownerName: CKCurrentUserDefaultName),
-                                                in: CKContainer.default().privateCloudDatabase,
+                                                in: CKContainer(identifier: CloudKitID).privateCloudDatabase,
                                                 previousToken: nil,
                                                 keysToSync: nil)
       { (result) in

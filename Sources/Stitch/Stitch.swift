@@ -384,8 +384,10 @@ public class StitchStore: NSIncrementalStore {
       do {
          var resourceValues = URLResourceValues()
          resourceValues.isExcludedFromBackup = true
-         var url = tokenURL()
-         try url.setResourceValues(resourceValues)
+         var url = tokenURL
+         if FileManager.default.fileExists(atPath: url.path) {
+            try url.setResourceValues(resourceValues)
+         }
       } catch {
          print("Error setting file not backed up \(error)");
       }

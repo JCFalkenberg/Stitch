@@ -8,7 +8,6 @@
 import CoreData
 import CloudKit
 
-@objc(Shelf)
 class ChangeSet: NSManagedObject {
    @NSManaged public var sm_LocalStore_EntityName: String?
    @NSManaged public var sm_LocalStore_RecordID: String
@@ -32,7 +31,7 @@ class ChangeSet: NSManagedObject {
                     changedProperties: String? = nil,
                     changeType: StitchStore.RecordChange)
    {
-      self.init(entity: ChangeSet.entity(), insertInto: context)
+      self.init(entity: context.entitiesByName![StitchStore.BackingModelNames.ChangeSetEntity]!, insertInto: context)
       sm_LocalStore_EntityName = entityName
       sm_LocalStore_RecordID = recordID
       sm_LocalStore_ChangedProperties = changedProperties
