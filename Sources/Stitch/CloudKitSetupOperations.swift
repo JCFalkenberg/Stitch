@@ -15,8 +15,14 @@ public extension CKModifySubscriptionsOperation {
                     in database: CKDatabase?,
                     completion: @escaping BasicErrorCompletionBlock)
    {
+      #if os(watchOS)
+      let subscription = CKRecordZoneSubscription(zoneID: zoneID)
+      #else
       let subscription = CKRecordZoneSubscription(zoneID: zoneID,
                                                   subscriptionID: name)
+      #endif
+
+      #if !os(watchOS)
       let subscriptionNotificationInfo = CKSubscription.NotificationInfo()
       #if !os(tvOS)
       subscriptionNotificationInfo.alertBody = ""
@@ -24,10 +30,21 @@ public extension CKModifySubscriptionsOperation {
       subscriptionNotificationInfo.shouldBadge = false
       #endif
       subscription.notificationInfo = subscriptionNotificationInfo
+      #endif
 
-      self.init(subscriptionsToSave: [subscription], subscriptionIDsToDelete: nil)
+      self.init()
+      subscriptionsToSave = [subscription]
       self.database = database
       self.qualityOfService = .userInitiated;
+      #if os(watchOS)
+      self.__modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
+         if let error = operationError {
+            completion(.failure(error))
+         } else {
+            completion(.success(true))
+         }
+      }
+      #else
       self.modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
          if let error = operationError {
             completion(.failure(error))
@@ -35,15 +52,30 @@ public extension CKModifySubscriptionsOperation {
             completion(.success(true))
          }
       }
+      #endif
    }
 
    convenience init(delete zoneID: String,
                     in database: CKDatabase?,
                     completion: @escaping BasicErrorCompletionBlock)
    {
+      #if os(watchOS)
+      self.init()
+      __subscriptionIDsToDelete = [zoneID]
+      #else
       self.init(subscriptionsToSave: nil, subscriptionIDsToDelete: [zoneID])
+      #endif
       self.database = database
       self.qualityOfService = .userInitiated
+      #if os(watchOS)
+      self.__modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
+         if let error = operationError {
+            completion(.failure(error))
+         } else {
+            completion(.success(true))
+         }
+      }
+      #else
       self.modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
          if let error = operationError {
             completion(.failure(error))
@@ -51,6 +83,7 @@ public extension CKModifySubscriptionsOperation {
             completion(.success(true))
          }
       }
+      #endif
    }
 }
 

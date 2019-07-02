@@ -26,6 +26,14 @@
 		B9D355E622CB959B002C4AEC /* StitchSyncSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */; };
 		B9D355E722CB959F002C4AEC /* TestModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */; };
 		B9D355EA22CB9630002C4AEC /* Stitch in Frameworks */ = {isa = PBXBuildFile; productRef = B9D355E922CB9630002C4AEC /* Stitch */; };
+		B9D355F122CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B9D355F022CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B9D355F722CB9CB4002C4AEC /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9D355F522CB9CB4002C4AEC /* Interface.storyboard */; };
+		B9D355F922CB9CB5002C4AEC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9D355F822CB9CB5002C4AEC /* Assets.xcassets */; };
+		B9D3560022CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B9D355FF22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B9D3560522CB9CB5002C4AEC /* InterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D3560422CB9CB5002C4AEC /* InterfaceController.swift */; };
+		B9D3560722CB9CB5002C4AEC /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D3560622CB9CB5002C4AEC /* ExtensionDelegate.swift */; };
+		B9D3560922CB9CB6002C4AEC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9D3560822CB9CB6002C4AEC /* Assets.xcassets */; };
+		B9D3561E22CB9E80002C4AEC /* Stitch in Frameworks */ = {isa = PBXBuildFile; productRef = B9D3561D22CB9E80002C4AEC /* Stitch */; };
 		B9D748F522BC8C420058EDB9 /* StitchNonSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D748F422BC8C420058EDB9 /* StitchNonSyncTests.swift */; };
 		B9EE702E22C428E700AFF960 /* StitchSyncSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EE702D22C428E700AFF960 /* StitchSyncSystemTests.swift */; };
 		B9F67BD922BCA5860092EEF1 /* StitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F67BD822BCA5860092EEF1 /* StitchTests.swift */; };
@@ -51,6 +59,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = B9D355C422CB9580002C4AEC;
 			remoteInfo = "StitchTester-tvOS";
+		};
+		B9D355F222CB9CB4002C4AEC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9C7570622BC802A0086163A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B9D355EF22CB9CB4002C4AEC;
+			remoteInfo = "StitchTester-watchOS WatchKit App";
+		};
+		B9D3560122CB9CB5002C4AEC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9C7570622BC802A0086163A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B9D355FE22CB9CB5002C4AEC;
+			remoteInfo = "StitchTester-watchOS WatchKit Extension";
 		};
 		B9D748F722BC8C420058EDB9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -79,6 +101,28 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B9D3560E22CB9CB6002C4AEC /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B9D3560022CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9D3561222CB9CB6002C4AEC /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				B9D355F122CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +148,17 @@
 		B9D355D522CB9582002C4AEC /* StitchTester-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "StitchTester-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9D355DB22CB9582002C4AEC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B9D355E822CB95BB002C4AEC /* StitchTester-tvOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "StitchTester-tvOS.entitlements"; sourceTree = "<group>"; };
+		B9D355ED22CB9CB4002C4AEC /* StitchTester-watchOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "StitchTester-watchOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9D355F022CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "StitchTester-watchOS WatchKit App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9D355F622CB9CB4002C4AEC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
+		B9D355F822CB9CB5002C4AEC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B9D355FA22CB9CB5002C4AEC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B9D355FF22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "StitchTester-watchOS WatchKit Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9D3560422CB9CB5002C4AEC /* InterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceController.swift; sourceTree = "<group>"; };
+		B9D3560622CB9CB5002C4AEC /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
+		B9D3560822CB9CB6002C4AEC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B9D3560A22CB9CB6002C4AEC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B9D3561622CB9CDE002C4AEC /* StitchTester-watchOS WatchKit Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "StitchTester-watchOS WatchKit Extension.entitlements"; sourceTree = "<group>"; };
 		B9D748F222BC8C420058EDB9 /* StitchTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StitchTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9D748F422BC8C420058EDB9 /* StitchNonSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StitchNonSyncTests.swift; sourceTree = "<group>"; };
 		B9D748F622BC8C420058EDB9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -147,6 +202,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B9D355FC22CB9CB5002C4AEC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9D3561E22CB9E80002C4AEC /* Stitch in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9D748EF22BC8C420058EDB9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -182,6 +245,8 @@
 				B9F9871722CB126B00E72151 /* StitchTester-iOSTests */,
 				B9D355C622CB9580002C4AEC /* StitchTester-tvOS */,
 				B9D355D822CB9582002C4AEC /* StitchTester-tvOSTests */,
+				B9D355F422CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App */,
+				B9D3560322CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension */,
 				B9C7570F22BC802A0086163A /* Products */,
 				B9C7573922BC842D0086163A /* Frameworks */,
 			);
@@ -196,6 +261,9 @@
 				B9F9871422CB126A00E72151 /* StitchTester-iOSTests.xctest */,
 				B9D355C522CB9580002C4AEC /* StitchTester-tvOS.app */,
 				B9D355D522CB9582002C4AEC /* StitchTester-tvOSTests.xctest */,
+				B9D355ED22CB9CB4002C4AEC /* StitchTester-watchOS.app */,
+				B9D355F022CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App.app */,
+				B9D355FF22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -239,6 +307,28 @@
 				B9D355DB22CB9582002C4AEC /* Info.plist */,
 			);
 			path = "StitchTester-tvOSTests";
+			sourceTree = "<group>";
+		};
+		B9D355F422CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App */ = {
+			isa = PBXGroup;
+			children = (
+				B9D355F522CB9CB4002C4AEC /* Interface.storyboard */,
+				B9D355F822CB9CB5002C4AEC /* Assets.xcassets */,
+				B9D355FA22CB9CB5002C4AEC /* Info.plist */,
+			);
+			path = "StitchTester-watchOS WatchKit App";
+			sourceTree = "<group>";
+		};
+		B9D3560322CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension */ = {
+			isa = PBXGroup;
+			children = (
+				B9D3561622CB9CDE002C4AEC /* StitchTester-watchOS WatchKit Extension.entitlements */,
+				B9D3560422CB9CB5002C4AEC /* InterfaceController.swift */,
+				B9D3560622CB9CB5002C4AEC /* ExtensionDelegate.swift */,
+				B9D3560822CB9CB6002C4AEC /* Assets.xcassets */,
+				B9D3560A22CB9CB6002C4AEC /* Info.plist */,
+			);
+			path = "StitchTester-watchOS WatchKit Extension";
 			sourceTree = "<group>";
 		};
 		B9D748F322BC8C420058EDB9 /* StitchTesterTests */ = {
@@ -340,6 +430,60 @@
 			productReference = B9D355D522CB9582002C4AEC /* StitchTester-tvOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		B9D355EC22CB9CB4002C4AEC /* StitchTester-watchOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B9D3561322CB9CB6002C4AEC /* Build configuration list for PBXNativeTarget "StitchTester-watchOS" */;
+			buildPhases = (
+				B9D355EB22CB9CB4002C4AEC /* Resources */,
+				B9D3561222CB9CB6002C4AEC /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B9D355F322CB9CB4002C4AEC /* PBXTargetDependency */,
+			);
+			name = "StitchTester-watchOS";
+			productName = "StitchTester-watchOS";
+			productReference = B9D355ED22CB9CB4002C4AEC /* StitchTester-watchOS.app */;
+			productType = "com.apple.product-type.application.watchapp2-container";
+		};
+		B9D355EF22CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B9D3560F22CB9CB6002C4AEC /* Build configuration list for PBXNativeTarget "StitchTester-watchOS WatchKit App" */;
+			buildPhases = (
+				B9D355EE22CB9CB4002C4AEC /* Resources */,
+				B9D3560E22CB9CB6002C4AEC /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B9D3560222CB9CB5002C4AEC /* PBXTargetDependency */,
+			);
+			name = "StitchTester-watchOS WatchKit App";
+			productName = "StitchTester-watchOS WatchKit App";
+			productReference = B9D355F022CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App.app */;
+			productType = "com.apple.product-type.application.watchapp2";
+		};
+		B9D355FE22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B9D3560B22CB9CB6002C4AEC /* Build configuration list for PBXNativeTarget "StitchTester-watchOS WatchKit Extension" */;
+			buildPhases = (
+				B9D355FB22CB9CB5002C4AEC /* Sources */,
+				B9D355FC22CB9CB5002C4AEC /* Frameworks */,
+				B9D355FD22CB9CB5002C4AEC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "StitchTester-watchOS WatchKit Extension";
+			packageProductDependencies = (
+				B9D3561D22CB9E80002C4AEC /* Stitch */,
+			);
+			productName = "StitchTester-watchOS WatchKit Extension";
+			productReference = B9D355FF22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension.appex */;
+			productType = "com.apple.product-type.watchkit2-extension";
+		};
 		B9D748F122BC8C420058EDB9 /* StitchTesterTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B9D748F922BC8C420058EDB9 /* Build configuration list for PBXNativeTarget "StitchTesterTests" */;
@@ -416,6 +560,15 @@
 						CreatedOnToolsVersion = 11.0;
 						TestTargetID = B9D355C422CB9580002C4AEC;
 					};
+					B9D355EC22CB9CB4002C4AEC = {
+						CreatedOnToolsVersion = 11.0;
+					};
+					B9D355EF22CB9CB4002C4AEC = {
+						CreatedOnToolsVersion = 11.0;
+					};
+					B9D355FE22CB9CB5002C4AEC = {
+						CreatedOnToolsVersion = 11.0;
+					};
 					B9D748F122BC8C420058EDB9 = {
 						CreatedOnToolsVersion = 11.0;
 						TestTargetID = B9C7570D22BC802A0086163A;
@@ -448,6 +601,9 @@
 				B9F9871322CB126A00E72151 /* StitchTester-iOSTests */,
 				B9D355C422CB9580002C4AEC /* StitchTester-tvOS */,
 				B9D355D422CB9582002C4AEC /* StitchTester-tvOSTests */,
+				B9D355EC22CB9CB4002C4AEC /* StitchTester-watchOS */,
+				B9D355EF22CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App */,
+				B9D355FE22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension */,
 			);
 		};
 /* End PBXProject section */
@@ -475,6 +631,30 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9D355EB22CB9CB4002C4AEC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9D355EE22CB9CB4002C4AEC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9D355F922CB9CB5002C4AEC /* Assets.xcassets in Resources */,
+				B9D355F722CB9CB4002C4AEC /* Interface.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9D355FD22CB9CB5002C4AEC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9D3560922CB9CB6002C4AEC /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -535,6 +715,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B9D355FB22CB9CB5002C4AEC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9D3560722CB9CB5002C4AEC /* ExtensionDelegate.swift in Sources */,
+				B9D3560522CB9CB5002C4AEC /* InterfaceController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9D748EE22BC8C420058EDB9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -579,6 +768,16 @@
 			target = B9D355C422CB9580002C4AEC /* StitchTester-tvOS */;
 			targetProxy = B9D355D622CB9582002C4AEC /* PBXContainerItemProxy */;
 		};
+		B9D355F322CB9CB4002C4AEC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B9D355EF22CB9CB4002C4AEC /* StitchTester-watchOS WatchKit App */;
+			targetProxy = B9D355F222CB9CB4002C4AEC /* PBXContainerItemProxy */;
+		};
+		B9D3560222CB9CB5002C4AEC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B9D355FE22CB9CB5002C4AEC /* StitchTester-watchOS WatchKit Extension */;
+			targetProxy = B9D3560122CB9CB5002C4AEC /* PBXContainerItemProxy */;
+		};
 		B9D748F822BC8C420058EDB9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B9C7570D22BC802A0086163A /* StitchTester */;
@@ -606,6 +805,14 @@
 				B9D355CC22CB9580002C4AEC /* Base */,
 			);
 			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		B9D355F522CB9CB4002C4AEC /* Interface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B9D355F622CB9CB4002C4AEC /* Base */,
+			);
+			name = Interface.storyboard;
 			sourceTree = "<group>";
 		};
 		B9F9870722CB126A00E72151 /* Main.storyboard */ = {
@@ -872,6 +1079,121 @@
 			};
 			name = Release;
 		};
+		B9D3560C22CB9CB6002C4AEC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_ENTITLEMENTS = "StitchTester-watchOS WatchKit Extension/StitchTester-watchOS WatchKit Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				INFOPLIST_FILE = "StitchTester-watchOS WatchKit Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-watchOS.watchkitapp.watchkitextension";
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Debug;
+		};
+		B9D3560D22CB9CB6002C4AEC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_ENTITLEMENTS = "StitchTester-watchOS WatchKit Extension/StitchTester-watchOS WatchKit Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				INFOPLIST_FILE = "StitchTester-watchOS WatchKit Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-watchOS.watchkitapp.watchkitextension";
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Release;
+		};
+		B9D3561022CB9CB6002C4AEC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				IBSC_MODULE = StitchTester_watchOS_WatchKit_Extension;
+				INFOPLIST_FILE = "StitchTester-watchOS WatchKit App/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-watchOS.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Debug;
+		};
+		B9D3561122CB9CB6002C4AEC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				IBSC_MODULE = StitchTester_watchOS_WatchKit_Extension;
+				INFOPLIST_FILE = "StitchTester-watchOS WatchKit App/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-watchOS.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Release;
+		};
+		B9D3561422CB9CB6002C4AEC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-watchOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B9D3561522CB9CB6002C4AEC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 68GDTXVT88;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.darkchocolatesoftware.StitchTester-watchOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		B9D748FA22BC8C420058EDB9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1041,6 +1363,33 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B9D3560B22CB9CB6002C4AEC /* Build configuration list for PBXNativeTarget "StitchTester-watchOS WatchKit Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9D3560C22CB9CB6002C4AEC /* Debug */,
+				B9D3560D22CB9CB6002C4AEC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B9D3560F22CB9CB6002C4AEC /* Build configuration list for PBXNativeTarget "StitchTester-watchOS WatchKit App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9D3561022CB9CB6002C4AEC /* Debug */,
+				B9D3561122CB9CB6002C4AEC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B9D3561322CB9CB6002C4AEC /* Build configuration list for PBXNativeTarget "StitchTester-watchOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9D3561422CB9CB6002C4AEC /* Debug */,
+				B9D3561522CB9CB6002C4AEC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B9D748F922BC8C420058EDB9 /* Build configuration list for PBXNativeTarget "StitchTesterTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1076,6 +1425,10 @@
 			productName = Stitch;
 		};
 		B9D355E922CB9630002C4AEC /* Stitch */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Stitch;
+		};
+		B9D3561D22CB9E80002C4AEC /* Stitch */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Stitch;
 		};
