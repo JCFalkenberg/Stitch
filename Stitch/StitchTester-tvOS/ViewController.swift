@@ -1,8 +1,8 @@
 //
 //  ViewController.swift
-//  StitchTester-iOS
+//  StitchTester-tvOS
 //
-//  Created by Elizabeth Siemer on 7/1/19.
+//  Created by Elizabeth Siemer on 7/2/19.
 //  Copyright © 2019 Dark Chocolate Software, LLC. All rights reserved.
 //
 
