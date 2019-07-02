@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B930847622C2C3CA0099E0A7 /* StitchCloudKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B930847522C2C3CA0099E0A7 /* StitchCloudKitTests.swift */; };
 		B943BA3822C534D900EC9547 /* StitchTesterRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B943BA3722C534D900EC9547 /* StitchTesterRoot.swift */; };
+		B9544F2522CBCC5500C5ED29 /* TestModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B9CDF08222BD18F5004A52D3 /* TestModel.xcdatamodeld */; };
 		B9C7571222BC802A0086163A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C7571122BC802A0086163A /* AppDelegate.swift */; };
 		B9C7571422BC802C0086163A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9C7571322BC802C0086163A /* Assets.xcassets */; };
 		B9C7571722BC802C0086163A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9C7571522BC802C0086163A /* Main.storyboard */; };
@@ -719,6 +720,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9544F2522CBCC5500C5ED29 /* TestModel.xcdatamodeld in Sources */,
 				B9D3560722CB9CB5002C4AEC /* ExtensionDelegate.swift in Sources */,
 				B9D3560522CB9CB5002C4AEC /* InterfaceController.swift in Sources */,
 			);
@@ -961,6 +963,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.darkchocolatesoftware.StitchTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -981,6 +984,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.darkchocolatesoftware.StitchTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1005,7 +1009,7 @@
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.0;
+				TVOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Debug;
 		};
@@ -1027,7 +1031,7 @@
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.0;
+				TVOS_DEPLOYMENT_TARGET = 10.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -1242,7 +1246,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 68GDTXVT88;
 				INFOPLIST_FILE = "StitchTester-iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1263,7 +1267,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 68GDTXVT88;
 				INFOPLIST_FILE = "StitchTester-iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

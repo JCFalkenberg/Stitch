@@ -400,6 +400,8 @@ public class StitchStore: NSIncrementalStore {
       guard let context = context else { throw StitchStoreError.invalidRequest }
       var results: Any? = nil
       switch request.requestType {
+      case .batchInsertRequestType:
+         throw StitchStoreError.invalidRequest
       case .batchUpdateRequestType:
          guard let request = request as? NSBatchUpdateRequest else { throw StitchStoreError.invalidRequest }
          results = try batchUpdate(request, context: context)

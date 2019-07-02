@@ -7,12 +7,68 @@
 //
 
 import WatchKit
+import CoreData
+import Stitch
 
-class ExtensionDelegate: NSObject, WKExtensionDelegate {
+class ExtensionDelegate: NSObject, WKExtensionDelegate, StitchConnectionStatus {
+   var internetConnectionAvailable: Bool { return true }
+
+   var coordinator: NSPersistentStoreCoordinator? = nil
+   var store: StitchStore? = nil
+   var context: NSManagedObjectContext? = nil
    
    func applicationDidFinishLaunching() {
       // Perform any final initialization of your application.
-      
+
+      guard let url = Bundle.main.url(forResource: "TestModel", withExtension: "momd") else { return }
+      guard let model = NSManagedObjectModel(contentsOf: url) else { return }
+      guard var storeURL = FileManager.default.urls(for: .applicationSupportDirectory,
+                                                    in: .userDomainMask).first else { return }
+      storeURL.appendPathComponent("StitchTests.store")
+      coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
+      do {
+         store = try coordinator?.addPersistentStore(ofType: StitchStore.storeType,
+                                                     configurationName: "Success",
+                                                     at: storeURL,
+                                                     options:
+            [
+               StitchStore.Options.ConnectionStatusDelegate: self,
+               StitchStore.Options.FetchRequestPredicateReplacement: NSNumber(value: true),
+               StitchStore.Options.CloudKitContainerIdentifier: "iCloud.com.darkchocolatesoftware.StitchTester",
+               StitchStore.Options.ZoneNameOption: "WatchTestsZone"
+            ]
+         ) as? StitchStore
+         context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+         context?.persistentStoreCoordinator = coordinator
+
+         NotificationCenter.default.addObserver(self,
+                                                selector: #selector(syncNotification(_:)),
+                                                name: StitchStore.Notifications.DidFinishSync,
+                                                object: store)
+         NotificationCenter.default.addObserver(self,
+                                                selector: #selector(syncNotification(_:)),
+                                                name: StitchStore.Notifications.DidFailSync,
+                                                object: store)
+         NotificationCenter.default.addObserver(self,
+                                                selector: #selector(syncNotification(_:)),
+                                                name: StitchStore.Notifications.DidStartSync,
+                                                object: store)
+         store?.triggerSync(.storeAdded)
+      } catch {
+         print("error adding store \(error)")
+      }
+   }
+
+   @objc func syncNotification(_ note: Notification) {
+      if note.name == StitchStore.Notifications.DidFinishSync {
+         print("sync succeeded")
+      } else if note.name == StitchStore.Notifications.DidFailSync {
+         print("Failed sync! \(String(describing: note.userInfo))")
+      } else if note.name == StitchStore.Notifications.DidStartSync {
+         print("started")
+      } else {
+         print("Unexpected sync note")
+      }
    }
    
    func applicationDidBecomeActive() {

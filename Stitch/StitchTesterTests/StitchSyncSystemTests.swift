@@ -462,7 +462,12 @@ class StitchSyncSystemTests: StitchTesterRoot {
       store?.triggerSync(.networkState)
       awaitSync() //Sync
       awaitSync() //Entity redownload
-      XCTAssertEqual(store?.changedEntitesToMigrate.count, 0)
+      let expectation = XCTestExpectation(description: "Expectation")
+      DispatchQueue.main.async {
+         XCTAssertEqual(self.store?.changedEntitesToMigrate.count, 0)
+         expectation.fulfill()
+      }
+      wait(for: [expectation], timeout: 1.0)
    }
 
    func testDoubleUpgradeStore() {
