@@ -35,7 +35,7 @@ public extension CKModifySubscriptionsOperation {
       self.init()
       subscriptionsToSave = [subscription]
       self.database = database
-      self.qualityOfService = .userInitiated;
+      self.qualityOfService = .userInitiated
       #if os(watchOS)
       self.__modifySubscriptionsCompletionBlock = { (modified, created, operationError) in
          if let error = operationError {
@@ -95,7 +95,7 @@ public extension CKModifyRecordZonesOperation {
    {
       self.init(recordZonesToSave: [recordZone], recordZoneIDsToDelete: nil)
       self.database = database
-      self.qualityOfService = .userInitiated;
+      self.qualityOfService = .userInitiated
       self.modifyRecordZonesCompletionBlock = { (savedRecordZones, deletedRecordZonesIDs, operationError) in
          if let error = operationError {
             setupCompletion(.failure(error))

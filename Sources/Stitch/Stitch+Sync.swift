@@ -32,7 +32,7 @@ extension StitchStore {
          if reason.rawValue < nextSyncReason.rawValue {
             nextSyncReason = reason
          }
-         syncAgain = true;
+         syncAgain = true
          return
       }
       if !(connectionStatus?.internetConnectionAvailable ?? false) {
@@ -163,7 +163,7 @@ extension StitchStore {
       } else if(syncAgain){
          let nextReason = nextSyncReason
          let delayTime = DispatchTime.now() + .seconds(1)
-         syncAgain = false;
+         syncAgain = false
          DispatchQueue.main.asyncAfter(deadline: delayTime) {
             self.triggerSync(nextReason)
          }

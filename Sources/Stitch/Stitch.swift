@@ -264,7 +264,7 @@ public class StitchStore: NSIncrementalStore {
          database = CKContainer.default().privateCloudDatabase
       }
       if let status = options?[Options.ConnectionStatusDelegate] as? StitchConnectionStatus {
-         connectionStatus = status;
+         connectionStatus = status
       }
       excludedUnchangingAsyncAssetKeys = options?[Options.ExcludedUnchangingAsyncAssetKeys] as? [String] ?? []
       if excludedUnchangingAsyncAssetKeys.count > 0 {
@@ -389,7 +389,7 @@ public class StitchStore: NSIncrementalStore {
             try url.setResourceValues(resourceValues)
          }
       } catch {
-         print("Error setting file not backed up \(error)");
+         print("Error setting file not backed up \(error)")
       }
       #endif
    }
