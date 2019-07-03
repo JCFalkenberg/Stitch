@@ -73,8 +73,8 @@ extension StitchStore
             result = !relationship.isToMany
          }
          if let attribute = $0 as? NSAttributeDescription {
-            if attribute.name == StitchStore.BackingModelNames.RecordIDAttribute ||
-               attribute.name == StitchStore.BackingModelNames.RecordEncodedAttribute
+            if attribute.name == BackingModelNames.RecordIDAttribute ||
+               attribute.name == BackingModelNames.RecordEncodedAttribute
             {
                result = true
             } else {

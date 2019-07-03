@@ -20,6 +20,50 @@ extension StitchStore
       return results.compactMap { return $0[BackingModelNames.RecordIDAttribute] as? String }
    }
 
+   @available (iOS 13.0, tvOS 13.0, macOS 14.0, watchOS 6.0, *)
+   func batchInsert(_ request: NSBatchInsertRequest,
+                    context: NSManagedObjectContext) throws -> NSBatchInsertResult
+   {
+      guard let backingEntity = backingModel?.entitiesByName[request.entityName] else {
+         throw StitchStoreError.invalidRequest
+      }
+      let cloneRequest = NSBatchInsertRequest(entity: backingEntity,
+                                              andObjects: request.objectsToInsert ?? [[:]])
+      cloneRequest.resultType = .objectIDs
+
+      guard let resultObject = try backingMOC.executeBatch(cloneRequest) as? NSBatchInsertResult,
+         let insertedIDs = resultObject.result as? [NSManagedObjectID] else
+      {
+         throw StitchStoreError.invalidRequest
+      }
+
+      for objectID in insertedIDs {
+         let object = backingMOC.object(with: objectID)
+         let reference = UUID().uuidString
+         object[BackingModelNames.RecordIDAttribute] = reference
+         let _ = ChangeSet(context: backingMOC,
+                           entityName: request.entityName,
+                           recordID: reference,
+                           changeType: .inserted)
+
+      }
+
+      let finalResult = NSManagedObjectContext.BatchInsertResult(type: request.resultType)
+
+      switch  request.resultType {
+      case .statusOnly:
+         finalResult.theResult = true
+      case .objectIDs:
+         finalResult.theResult = insertedIDs.map { outwardManagedObjectID($0) }
+      case .count:
+         finalResult.theResult = insertedIDs.count
+      @unknown default:
+         throw StitchStoreError.invalidRequest
+      }
+
+      return finalResult
+   }
+
    func batchUpdate(_ request: NSBatchUpdateRequest,
                     context: NSManagedObjectContext) throws -> NSBatchUpdateResult
    {
@@ -59,7 +103,7 @@ extension StitchStore
       case .updatedObjectsCountResultType:
          finalResult.theResult = results.count
       @unknown default:
-         throw StitchStore.StitchStoreError.invalidRequest
+         throw StitchStoreError.invalidRequest
       }
       return finalResult
    }
@@ -102,7 +146,7 @@ extension StitchStore
       case .resultTypeCount:
          finalResult.theResult = batchresults.count
       @unknown default:
-         throw StitchStore.StitchStoreError.invalidRequest
+         throw StitchStoreError.invalidRequest
       }
 
       return finalResult

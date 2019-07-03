@@ -33,6 +33,18 @@ extension NSManagedObjectContext {
       }
    }
 
+   @available(iOS 13.0, tvOS 13.0, macOS 14.0, watchOS 6.0, *)
+   class BatchInsertResult: NSBatchInsertResult {
+      var theResult: Any? = nil
+      var theType: NSBatchInsertRequestResultType
+      override var result: Any? { return theResult }
+      override var resultType: NSBatchInsertRequestResultType { return theType }
+
+      init(type: NSBatchInsertRequestResultType) {
+         self.theType = type
+      }
+   }
+
    class BatchUpdateResult: NSBatchUpdateResult {
       var theResult: Any? = nil
       var theType: NSBatchUpdateRequestResultType
@@ -63,65 +75,109 @@ extension NSManagedObjectContext {
       }
       if hasOnlySQLiteStores {
          return try execute(request)
-      } else if let batchUpdateRequest = request as? NSBatchUpdateRequest {
-         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: batchUpdateRequest.entityName)
-         fetchRequest.predicate = batchUpdateRequest.predicate
-
-         let objectsToChange = try fetch(fetchRequest)
-
-         for object in objectsToChange {
-            for (key, value) in batchUpdateRequest.propertiesToUpdate ?? [:] {
-               if let key = key as? String {
-                  object[key] = value
-               }
-               if let key = key as? NSAttributeDescription {
-                  object[key.name] = (value as? NSExpression)?.constantValue
-               }
-            }
-         }
-         let result = BatchUpdateResult(type: batchUpdateRequest.resultType)
-
-         switch batchUpdateRequest.resultType {
-         case .statusOnlyResultType:
-            result.theResult = true
-         case .updatedObjectIDsResultType:
-            result.theResult = objectsToChange.map { $0.objectID }
-         case .updatedObjectsCountResultType:
-            result.theResult = objectsToChange.count
-         @unknown default:
-            throw StitchStore.StitchStoreError.invalidRequest
-         }
-         return result
-      } else if let batchDeleteRequest = request as? NSBatchDeleteRequest {
-         let objectsToDelete = try fetch(batchDeleteRequest.fetchRequest)
-         var objectIDs = [NSManagedObjectID]()
-         for object in objectsToDelete {
-            if let object = object as? NSManagedObject {
-               delete(object)
-               objectIDs.append(object.objectID)
-            }
-            if let id = object as? NSManagedObjectID {
-               let object = self.object(with: id)
-               delete(object)
-               objectIDs.append(id)
-            }
-         }
-
-         let result = BatchDeleteResult(type: batchDeleteRequest.resultType)
-
-         switch batchDeleteRequest.resultType {
-         case .resultTypeStatusOnly:
-            result.theResult = true
-         case .resultTypeObjectIDs:
-            result.theResult = objectIDs
-         case .resultTypeCount:
-            result.theResult = objectsToDelete.count
-         @unknown default:
-            throw StitchStore.StitchStoreError.invalidRequest
-         }
-         return result
+      }
+      if #available(iOS 13.0, tvOS 13.0, macOS 14.0, watchOS 6.0, *),
+         let batchInsertRequest = request as? NSBatchInsertRequest
+      {
+         return try _executeBatchInsert(batchInsertRequest)
+      }
+      if let batchUpdateRequest = request as? NSBatchUpdateRequest {
+         return try _executeBatchUpdate(batchUpdateRequest)
+      }
+      if let batchDeleteRequest = request as? NSBatchDeleteRequest {
+         return try _executeBatchDelete(batchDeleteRequest)
       }
 
       throw StitchStore.StitchStoreError.invalidRequest
+   }
+
+   @available(iOS 13.0, tvOS 13.0, macOS 14.0, watchOS 6.0, *)
+   fileprivate func _executeBatchInsert(_ request: NSBatchInsertRequest) throws -> NSBatchInsertResult
+   {
+      guard let entity = persistentStoreCoordinator?.managedObjectModel.entitiesByName[request.entityName] else {
+         throw StitchStore.StitchStoreError.invalidRequest
+      }
+      var results = [NSManagedObject]()
+      for valuesDict in request.objectsToInsert ?? [[:]] {
+         let result = NSManagedObject(entity: entity, insertInto: self)
+         result.setValuesForKeys(valuesDict)
+         results.append(result)
+      }
+
+      let finalResult = BatchInsertResult(type: request.resultType)
+      switch request.resultType {
+      case .statusOnly:
+         finalResult.theResult = true
+      case .objectIDs:
+         finalResult.theResult = results.map { $0.objectID }
+      case .count:
+         finalResult.theResult = results.count
+      @unknown default:
+         throw StitchStore.StitchStoreError.invalidRequest
+      }
+      return finalResult
+   }
+
+   fileprivate func _executeBatchUpdate(_ request: NSBatchUpdateRequest) throws -> NSBatchUpdateResult
+   {
+      let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: request.entityName)
+      fetchRequest.predicate = request.predicate
+
+      let objectsToChange = try fetch(fetchRequest)
+
+      for object in objectsToChange {
+         for (key, value) in request.propertiesToUpdate ?? [:] {
+            if let key = key as? String {
+               object[key] = value
+            }
+            if let key = key as? NSAttributeDescription {
+               object[key.name] = (value as? NSExpression)?.constantValue
+            }
+         }
+      }
+      let result = BatchUpdateResult(type: request.resultType)
+
+      switch request.resultType {
+      case .statusOnlyResultType:
+         result.theResult = true
+      case .updatedObjectIDsResultType:
+         result.theResult = objectsToChange.map { $0.objectID }
+      case .updatedObjectsCountResultType:
+         result.theResult = objectsToChange.count
+      @unknown default:
+         throw StitchStore.StitchStoreError.invalidRequest
+      }
+      return result
+   }
+
+   fileprivate func _executeBatchDelete(_ request: NSBatchDeleteRequest) throws -> NSBatchDeleteResult
+   {
+      let objectsToDelete = try fetch(request.fetchRequest)
+      var objectIDs = [NSManagedObjectID]()
+      for object in objectsToDelete {
+         if let object = object as? NSManagedObject {
+            delete(object)
+            objectIDs.append(object.objectID)
+         }
+         if let id = object as? NSManagedObjectID {
+            let object = self.object(with: id)
+            delete(object)
+            objectIDs.append(id)
+         }
+      }
+
+      let result = BatchDeleteResult(type: request.resultType)
+
+      switch request.resultType {
+      case .resultTypeStatusOnly:
+         result.theResult = true
+      case .resultTypeObjectIDs:
+         result.theResult = objectIDs
+      case .resultTypeCount:
+         result.theResult = objectsToDelete.count
+      @unknown default:
+         throw StitchStore.StitchStoreError.invalidRequest
+      }
+      return result
    }
 }

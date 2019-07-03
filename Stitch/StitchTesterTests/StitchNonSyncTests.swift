@@ -347,6 +347,29 @@ class StitchNonSyncTests: StitchTesterRoot {
       XCTAssertEqual(value.first?.uriRepresentation(), entry.objectID.uriRepresentation())
    }
 
+   func testBatchInsert() {
+      if #available(iOS 13.0, tvOS 13.0, macOS 14.0, watchOS 6.0, *) {
+         let request = NSBatchInsertRequest(entityName: "Entry",
+                                            objects:
+            [
+               ["text": "be gai, due crimez"],
+               ["text": "be tranz, due crimez"]
+         ])
+
+         guard let result = try? context?.execute(request) as? NSBatchInsertResult else {
+            XCTFail("no result =/")
+            return
+         }
+         XCTAssertNotNil(result.result as? Bool)
+         XCTAssert(result.result as? Bool ?? false)
+         save()
+
+         let entryRequest: NSFetchRequest<Entry> = Entry.fetchRequest()
+         let entries = try? context?.fetch(entryRequest)
+         XCTAssertEqual(entries?.count, 2)
+      }
+   }
+
    func testBatchUpdate() {
       _ = addEntryAndSave()
       let batch = NSBatchUpdateRequest(entityName: "Entry")

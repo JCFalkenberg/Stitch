@@ -205,7 +205,7 @@ extension StitchStore {
                                     updated: updated)
             DispatchQueue.main.async {
                self.changedEntitesToMigrate.removeAll()
-               self.setMetadata(nil, key: StitchStore.Metadata.ChangedEntitiesToMigrate)
+               self.setMetadata(nil, key: Metadata.ChangedEntitiesToMigrate)
                self.checkSyncAgain()
             }
          }

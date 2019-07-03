@@ -401,7 +401,12 @@ public class StitchStore: NSIncrementalStore {
       var results: Any? = nil
       switch request.requestType {
       case .batchInsertRequestType:
-         throw StitchStoreError.invalidRequest
+         if #available(iOS 13.0, tvOS 13.0, macOS 14.0, watchOS 6.0, *) {
+            guard let request = request as? NSBatchInsertRequest else { throw StitchStoreError.invalidRequest }
+            results = try batchInsert(request, context: context)
+         } else {
+            throw StitchStoreError.invalidRequest
+         }
       case .batchUpdateRequestType:
          guard let request = request as? NSBatchUpdateRequest else { throw StitchStoreError.invalidRequest }
          results = try batchUpdate(request, context: context)
@@ -428,7 +433,7 @@ public class StitchStore: NSIncrementalStore {
    func backingObject(for referenceString: String, entity: String) -> NSManagedObject? {
       do {
          let fetchRequest: NSFetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity)
-         fetchRequest.predicate = NSPredicate(format: "%K == %@", StitchStore.BackingModelNames.RecordIDAttribute, referenceString)
+         fetchRequest.predicate = NSPredicate(format: "%K == %@", BackingModelNames.RecordIDAttribute, referenceString)
          fetchRequest.fetchLimit = 1
          let results = try backingMOC.fetch(fetchRequest)
          return results.last
@@ -443,7 +448,7 @@ public class StitchStore: NSIncrementalStore {
       var entityName = ""
       backingMOC.performAndWait {
          let value = backingMOC.object(with: backingID)
-         recordID = value[StitchStore.BackingModelNames.RecordIDAttribute] as! String
+         recordID = value[BackingModelNames.RecordIDAttribute] as! String
          entityName = value.entityName
       }
       return outwardManagedObjectIDForRecordEntity(recordID, entityName: entityName)
@@ -458,8 +463,8 @@ public class StitchStore: NSIncrementalStore {
 
    func backingObject(for outward: NSManagedObject) throws -> NSManagedObject {
       try outward.managedObjectContext?.obtainPermanentIDs(for: [outward])
-      guard let reference = referenceObject(for: outward.objectID) as? String else { throw StitchStore.StitchStoreError.invalidReferenceObject }
-      guard let backing = backingObject(for: reference, entity: outward.entityName) else { throw StitchStore.StitchStoreError.invalidReferenceObject }
+      guard let reference = referenceObject(for: outward.objectID) as? String else { throw StitchStoreError.invalidReferenceObject }
+      guard let backing = backingObject(for: reference, entity: outward.entityName) else { throw StitchStoreError.invalidReferenceObject }
       return backing
    }
 
