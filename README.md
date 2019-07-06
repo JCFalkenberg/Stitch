@@ -6,6 +6,10 @@
 [![Language](https://img.shields.io/badge/language-Swift-orange.svg)](https://swift.org)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/jcfalkenberg/Stitch.svg?label=version)
 
+| Platform | Tests | Coverage |
+|----|----|----|
+| macOS | ![Tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester%2520Bot-Tests.json) | ![Coverage](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester%2520Bot-coverage.json) |
+
 ### Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
 
 ## This is a work in progress alpha. It builds, it has some tests for the non syncing portions of the code.
