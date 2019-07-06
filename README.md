@@ -8,7 +8,10 @@
 
 | Platform | Tests | Coverage |
 |----|----|----|
-| macOS | ![Tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester%2520Bot-Tests.json) | ![Coverage](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester%2520Bot-coverage.json) |
+| macOS | ![Tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester%2520Bot-Tests.json) | ![Coverage](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester%2520Bot-Coverage.json) |
+| iOS | ![Tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester-iOS%2520Bot-Tests.json) | ![Coverage](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester-iOS%2520Bot-Coverage.json) |
+| tvOS | ![Tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester-tvOS%2520Bot-Tests.json) | ![Coverage](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdarkchocolatesoftware.com%2Fstitch%2FStitchTester-tvOS%2520Bot-Coverage.json) |
+| watchOS | build info only - soon |  |
 
 ### Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
 
