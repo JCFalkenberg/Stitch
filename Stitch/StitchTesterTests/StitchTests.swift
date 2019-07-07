@@ -63,8 +63,6 @@ final class StitchTests: XCTestCase {
 
    func testTestModel() {
       let model = NSManagedObjectModel.StitchTestsModel
-      XCTAssertEqual(model.configurations.count, 3)
-      XCTAssert(model.configurations.contains("PF_DEFAULT_CONFIGURATION_NAME"))
       XCTAssert(model.configurations.contains("Success"))
       XCTAssert(model.configurations.contains("Failure"))
       XCTAssertEqual(model.entities.count, 8)
@@ -78,15 +76,13 @@ final class StitchTests: XCTestCase {
                                  type: .stringAttributeType)]
       )
       backingAttributesModel.entities.append(entity)
-      backingAttributesModel.setEntities([entity], forConfigurationName: "Default")
-      return backingAttributesModel.validateStitchStoreModel(for: "Default")
+      return backingAttributesModel.validateStitchStoreModel(for: nil)
    }
    func validateEntity(named: String) -> Bool {
       let entityModel = NSManagedObjectModel()
       let entity = NSEntityDescription(named, attributes: [])
       entityModel.entities.append(entity)
-      entityModel.setEntities([entity], forConfigurationName: "Default")
-      return entityModel.validateStitchStoreModel(for: "Default")
+      return entityModel.validateStitchStoreModel(for: nil)
    }
 
    func testModelValidator() {
@@ -94,6 +90,7 @@ final class StitchTests: XCTestCase {
       XCTAssertTrue(model.validateStitchStoreModel(for: "Success"))
       XCTAssertFalse(model.validateStitchStoreModel(for: "Failure"))
       XCTAssertFalse(model.validateStitchStoreModel(for: "DoesntExist"))
+      XCTAssertFalse(model.validateStitchStoreModel(for: nil))
 
       XCTAssertFalse(validateAttribute(named: StitchStore.BackingModelNames.RecordIDAttribute))
       XCTAssertFalse(validateAttribute(named: StitchStore.BackingModelNames.RecordEncodedAttribute))
@@ -121,6 +118,19 @@ final class StitchTests: XCTestCase {
       XCTAssertNotNil(backingEntity.attributesByName[StitchStore.BackingModelNames.RecordEncodedAttribute])
 
       XCTAssertNotNil(backingModel.entitiesByName[StitchStore.BackingModelNames.ChangeSetEntity])
+   }
+
+   func testNilConfigName() {
+      let model = NSManagedObjectModel.StitchTestsModel
+      let backingModel = model.copyStichBackingModel(for: "nil")
+
+      XCTAssertEqual(backingModel.entities.count, 9)
+      let nilConfigEntities = backingModel.entities(forConfigurationName: nil)
+      let successConfigEntities = backingModel.entities(forConfigurationName: "Success")
+      XCTAssertEqual(nilConfigEntities?.count, 9) //Should be added to the nil config
+      XCTAssertEqual(successConfigEntities?.count, 5) //Should not be added to the success config
+      
+      XCTAssertNotNil(nilConfigEntities?.first(where: { $0.name == StitchStore.BackingModelNames.ChangeSetEntity }))
    }
 
    func testAddFailure() {

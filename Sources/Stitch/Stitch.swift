@@ -245,12 +245,12 @@ public class StitchStore: NSIncrementalStore {
          super.init(persistentStoreCoordinator: root, configurationName: name, at: url, options: options)
          return
       }
-      if !rooted.managedObjectModel.validateStitchStoreModel(for: name ?? "Default") {
+      if !rooted.managedObjectModel.validateStitchStoreModel(for: name) {
          print("Unable to validate store model!")
          super.init(persistentStoreCoordinator: root, configurationName: name, at: url, options: options)
          return
       }
-      backingModel = rooted.managedObjectModel.copyStichBackingModel(for: name ?? "Default")
+      backingModel = rooted.managedObjectModel.copyStichBackingModel(for: name)
 
       if let policyNumber = options?[Options.SyncConflictResolutionPolicy] as? NSNumber,
          let policy = ConflictPolicy(rawValue: policyNumber.int16Value)

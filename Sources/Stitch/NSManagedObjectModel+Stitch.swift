@@ -8,22 +8,23 @@
 import CoreData
 
 extension NSManagedObjectModel {
-   func copyStichBackingModel(for configuration: String) -> NSManagedObjectModel {
+   func copyStichBackingModel(for configuration: String?) -> NSManagedObjectModel {
       let backingModel = self.copy() as! NSManagedObjectModel
       for entity in backingModel.entities(forConfigurationName: configuration) ?? [] {
          entity.modifyForStitchBackingStore()
       }
       let changeSetEntity = NSEntityDescription.changeSetEntity()
       backingModel.entities.append(changeSetEntity)
-      // TODO: Add test for this
-      backingModel.setEntities((backingModel.entities(forConfigurationName: configuration) ?? []) + [changeSetEntity],
-                               forConfigurationName: configuration)
+      if let configuration = configuration {
+         backingModel.setEntities((backingModel.entities(forConfigurationName: configuration) ?? []) + [changeSetEntity],
+                                  forConfigurationName: configuration)
+      }
       return backingModel
    }
 
-   func validateStitchStoreModel(for configuration: String) -> Bool {
+   func validateStitchStoreModel(for configuration: String?) -> Bool {
       var result = true
-      if !configurations.contains(configuration) {
+      if let configuration = configuration, !configurations.contains(configuration) {
          print("model has no configuration named \(configuration)")
          result = false
       }
