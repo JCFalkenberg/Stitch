@@ -432,14 +432,20 @@ class StitchSyncSystemTests: StitchTesterRoot {
    }
 
    func testPushUserInfo() {
-      //This is sort of fragile, but it should help
+      //This is fragile
+      //MARK: TODO: Fix these for other platforms
+      #if os(macOS)
       XCTAssert(store?.isOurPushNotification(remoteNotificationTestInfo) ?? false)
+      #endif
    }
 
    func testHandleUserInfo() {
-      //This is sort of fragile, but it should help
+      //This is fragile
+      //MARK: TODO: Fix these for other platforms
+      #if os(macOS)
       store?.handlePush(userInfo: remoteNotificationTestInfo)
       awaitSync()
+      #endif
    }
 
    func testSingleModelUpgrade() {
