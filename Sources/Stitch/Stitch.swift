@@ -426,8 +426,13 @@ public class StitchStore: NSIncrementalStore {
       return results ?? []
    }
 
-   public override func referenceObject(for objectID: NSManagedObjectID) -> Any {
-      return "\(super.referenceObject(for: objectID))"
+   public override func obtainPermanentIDs(for array: [NSManagedObject]) throws -> [NSManagedObjectID] {
+      return array.map { self.newObjectID(for: $0.entity, referenceObject: UUID().uuidString) }
+   }
+
+   internal func referenceString(for object: NSManagedObjectID) -> String {
+      let reference = referenceObject(for: object)
+      return reference as? String ?? "\(reference)"
    }
 
    func backingObject(for referenceString: String, entity: String) -> NSManagedObject? {
@@ -463,7 +468,7 @@ public class StitchStore: NSIncrementalStore {
 
    func backingObject(for outward: NSManagedObject) throws -> NSManagedObject {
       try outward.managedObjectContext?.obtainPermanentIDs(for: [outward])
-      guard let reference = referenceObject(for: outward.objectID) as? String else { throw StitchStoreError.invalidReferenceObject }
+      let reference = referenceString(for: outward.objectID)
       guard let backing = backingObject(for: reference, entity: outward.entityName) else { throw StitchStoreError.invalidReferenceObject }
       return backing
    }

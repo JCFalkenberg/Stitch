@@ -65,7 +65,7 @@ extension StitchStore
    override public func newValuesForObject(with objectID: NSManagedObjectID,
                                            with context: NSManagedObjectContext) throws -> NSIncrementalStoreNode
    {
-      guard let recordID = referenceObject(for: objectID) as? String else { throw StitchStoreError.invalidReferenceObject }
+      let recordID = referenceString(for: objectID)
 
       let propertiesToFetch: [String] = objectID.entity.properties.compactMap {
          var result = false
@@ -122,7 +122,7 @@ extension StitchStore
                                  forObjectWith objectID: NSManagedObjectID,
                                  with context: NSManagedObjectContext?) throws -> Any
    {
-      guard let recordID = referenceObject(for: objectID) as? String else { throw StitchStoreError.invalidReferenceObject }
+      let recordID = referenceString(for: objectID)
 
       let request = NSFetchRequest<NSManagedObject>(entityName: objectID.entity.name!)
       request.predicate = NSPredicate(backingReferenceID: recordID)

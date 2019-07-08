@@ -51,7 +51,7 @@ extension StitchStore {
          if relationshipValue.objectID.isTemporaryID {
             continue
          }
-         let reference = referenceObject(for: relationshipValue.objectID) as! String
+         let reference = referenceString(for: relationshipValue.objectID)
          guard let backingRelatedID = objectID(for: relationship.destinationEntity!.name!,
                                                with: reference) else { continue }
          let backingRelatedObject = backingMOC.object(with: backingRelatedID)
@@ -94,10 +94,7 @@ extension StitchStore {
             let dictionary = sourceObject.dictionaryWithValues(forKeys: keys)
             managedObject.setValuesForKeys(dictionary)
 
-            guard let referenceObject = referenceObject(for: sourceObject.objectID) as? String else {
-               caughtError = StitchStoreError.invalidReferenceObject
-               break
-            }
+            let referenceObject = referenceString(for: sourceObject.objectID)
             managedObject[BackingModelNames.RecordIDAttribute] = referenceObject
             do {
                try backingMOC.obtainPermanentIDs(for: [managedObject])
@@ -122,7 +119,7 @@ extension StitchStore {
       var caughtError: Error? = nil
       backingMOC.performAndWait {
          for sourceObject in objects {
-            guard let referenceObject = referenceObject(for: sourceObject.objectID) as? String else { continue }
+            let referenceObject = referenceString(for: sourceObject.objectID)
             guard let request = NSFetchRequest<NSManagedObject>.backingObjectRequest(for: sourceObject,
                                                                                      store: self) else { continue }
 

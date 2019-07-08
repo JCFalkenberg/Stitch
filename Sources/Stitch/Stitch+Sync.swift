@@ -175,7 +175,7 @@ extension StitchStore {
       var assetReferencesByType = [String: [String]]()
       for object in objects {
          guard let entityName = object.entity.name else { continue }
-         guard let backingReference = referenceObject(for: object.objectID) as? String else { continue }
+         let backingReference = referenceString(for: object.objectID)
          guard !downloadingAssets.contains(backingReference) else { continue }
 
          downloadingAssets.insert(backingReference)
@@ -227,9 +227,8 @@ extension StitchStore {
                                                                                zone: zoneID)
       { (recordIDs, finished) in
          for outwardID in recordIDs {
-            if let backingReference = self.referenceObject(for: self.outwardManagedObjectID(outwardID)) as? String {
-               self.downloadingAssets.remove(backingReference)
-            }
+            let backingReference = self.referenceString(for: self.outwardManagedObjectID(outwardID))
+            self.downloadingAssets.remove(backingReference)
          }
 
          self.informSyncFinished(added: recordIDs,

@@ -9,8 +9,8 @@ import CoreData
 import CloudKit
 
 extension NSFetchRequest {
-   @objc class func backingObjectRequest(for outwardObject: NSManagedObject, store: NSIncrementalStore) -> NSFetchRequest<NSManagedObject>? {
-      guard let recordID = store.referenceObject(for: outwardObject.objectID) as? String else { return nil }
+   @objc class func backingObjectRequest(for outwardObject: NSManagedObject, store: StitchStore) -> NSFetchRequest<NSManagedObject>? {
+      let recordID = store.referenceString(for: outwardObject.objectID)
       let request = NSFetchRequest<NSManagedObject>(entityName: outwardObject.entityName)
       request.predicate = NSPredicate(backingReferenceID: recordID)
       request.fetchLimit = 1
