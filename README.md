@@ -43,7 +43,7 @@ So after seeing that scary list of sharp points, what does Stitch have to offer?
 * Syncing can happen automatically on save
 * Store sets up CloudKit database zone, and subscription automatically
 * Customizable CloudKit database identifier, zone and subscription names
-* Cross Apple device, it supports macOS, iOS and tvOS, and will possibly support watchOS 6.
+* Cross Apple device, it supports macOS, iOS and tvOS, and watchOS
 
 ## CoreData to CloudKit
 

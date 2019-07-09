@@ -124,11 +124,15 @@ extension StitchStore {
       { (result) in
          switch result {
          case .success(_):
-            let subOperation = CKModifySubscriptionsOperation(create: recordZone.zoneID,
-                                                              name: self.subscriptionName,
-                                                              in: self.database,
-                                                              completion: completion)
-            self.operationQueue.addOperation(subOperation)
+            if #available(iOS 10.0, tvOS 10.0, macOS 10.12, watchOS 6.0, *) {
+               let subOperation = CKModifySubscriptionsOperation(create: recordZone.zoneID,
+                                                                 name: self.subscriptionName,
+                                                                 in: self.database,
+                                                                 completion: completion)
+               self.operationQueue.addOperation(subOperation)
+            } else {
+               completion(.success(true))
+            }
          case .failure(let error):
             completion(.failure(error))
          }
@@ -141,20 +145,27 @@ extension StitchStore {
                           on queue: OperationQueue,
                           completion: @escaping ZoneModifyCompletion)
    {
-      let deleteSubOperation = CKModifySubscriptionsOperation(delete: zone.zoneID.zoneName,
-                                                              in: database)
-      { (result) in
-         switch result {
-         case .success(_):
-            let deleteOperation = CKModifyRecordZonesOperation(delete: zone,
-                                                               in: database,
-                                                               setupCompletion: completion)
-            queue.addOperation(deleteOperation)
-         case .failure(let error):
-            completion(.failure(error))
+      if #available(iOS 10.0, tvOS 10.0, macOS 10.12, watchOS 6.0, *) {
+         let deleteSubOperation = CKModifySubscriptionsOperation(delete: zone.zoneID.zoneName,
+                                                                 in: database)
+         { (result) in
+            switch result {
+            case .success(_):
+               let deleteOperation = CKModifyRecordZonesOperation(delete: zone,
+                                                                  in: database,
+                                                                  setupCompletion: completion)
+               queue.addOperation(deleteOperation)
+            case .failure(let error):
+               completion(.failure(error))
+            }
          }
+         queue.addOperation(deleteSubOperation)
+      } else {
+         let deleteOperation = CKModifyRecordZonesOperation(delete: zone,
+                                                            in: database,
+                                                            setupCompletion: completion)
+         queue.addOperation(deleteOperation)
       }
-      queue.addOperation(deleteSubOperation)
    }
 
    fileprivate func checkSyncAgain() {

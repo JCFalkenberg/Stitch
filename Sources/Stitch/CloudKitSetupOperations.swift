@@ -9,6 +9,7 @@ import CloudKit
 
 public typealias BasicErrorCompletionBlock = (Result<Bool, Error>) -> Void
 
+@available(iOS 10.0, tvOS 10.0, macOS 10.12, watchOS 6.0, *)
 public extension CKModifySubscriptionsOperation {
    convenience init(create zoneID: CKRecordZone.ID,
                     name: String,
