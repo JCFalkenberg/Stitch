@@ -15,7 +15,7 @@
 
 ### Stitch is a framework built to sync a CoreData store to CloudKit, with backwards compatibility to older OS's than CloudKit+CoreData.
 
-## This is a work in progress alpha. It builds, it has some tests for the non syncing portions of the code.
+### This is a work in progress. It builds, it syncs, it has tests for a lot of things, but not all failure conditions and options.
 
 ## Warnings
 Stitch like it's namesake has some prickly parts to be aware of right off the bat. 
@@ -29,6 +29,7 @@ Stitch like it's namesake has some prickly parts to be aware of right off the ba
 * You must handle iCloud account observation externally to Stitch.
 * When sync finishes, you must integrate those changes in to your UI.
 * Conflict resolution has been simplified to either server or local record wins.
+* watchOS 5.x and older can't support push notifications and doesn't setup the subscription for them
 
 It was built primarily for my needs, and I haven't needed these, but I am not opposed to working in support for those that make sense
 
@@ -88,7 +89,7 @@ In case of any sync conflicts, Stitch exposes 2 conflict resolution policies. De
 ## How to use
 
 - Add a store type of `StitchStore.storeType` to your app's NSPersistentStoreCoordinator and assign it to the property created in the previous step.
-- Pass in an appropriate options dictionary,
+Pass in an appropriate options dictionary, more on supported options below.
 ```swift
 do {
    let store  = try coordinator.addPersistentStoreWithType(StitchStore.storeType,
@@ -111,46 +112,80 @@ UIApplication.shared.registerForRemoteNotifications()
 NSApp.registerForRemoteNotifications(matching: .alert)
 ```
 
-- Implement didReceiveRemoteNotification Method in your AppDelegate and call `handlePush` on the instance of SMStore created earlier.
+- Implement didReceiveRemoteNotification Method in your AppDelegate and call `handlePush` on the instance of SMStore created earlier. (macOS shown)
 ```swift
-func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) 
+func application(application: UIApplication, 
+                 didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) 
 {
    self.smStore?.handlePush(userInfo: userInfo)
 }
 ```
-- Enjoy
+
+- Listen for sync finished notification somewhere appropriate
+```swift
+NotificationCenter.default.addObserver(self,
+                                       selector: #selector(cloudKitSyncComplete),
+                                       name: StitchStore.Notifications.DidFinishSync,
+                                       object: nil)
+
+```
+- Integrate synced changes in to your view context
+
+```swift
+func realObjectsFromCloudKitSyncIDs(ids: Array<NSManagedObjectID>) -> Set<NSManagedObject> {
+   return Set<NSManagedObject>(ids.compactMap { persistentContainer.viewContext.object(with: $0) })
+}
+@objc func cloudKitSyncComplete(note: NSNotification) {
+   let noteInserted = note.userInfo?[NSInsertedObjectsKey] as? Array<NSManagedObjectID> ?? []
+   let noteDeleted = note.userInfo?[NSDeletedObjectsKey] as? Array<NSManagedObjectID> ?? []
+   let noteUpdated = note.userInfo?[NSUpdatedObjectsKey] as? Array<NSManagedObjectID> ?? []
+   if noteInserted.count == 0 && noteDeleted.count == 0 && noteUpdated.count == 0 {
+      return
+   }
+
+   let objectArrays = [NSInsertedObjectsKey: realObjectsFromCloudKitSyncIDs(ids: noteInserted),
+                       NSDeletedObjectsKey: realObjectsFromCloudKitSyncIDs(ids: noteDeleted),
+                       NSUpdatedObjectsKey: realObjectsFromCloudKitSyncIDs(ids: noteUpdated)]
+   let modifiedNote = Notification(name: .NSManagedObjectContextDidSave,
+                                   object: note.object,
+                                   userInfo: objectArrays)
+   persistentContainer.viewContext.mergeChanges(fromContextDidSave: modifiedNote)
+}
+```
+
+- Enjoy!
 
 ## Options 
 
 Defined in `StitchStore.Options`
 
 * `FetchRequestPredicateReplacement` NSNumber boolean that enables replacement of NSManagedObjects in NSPredicates on NSFetchRequests.
-defaults to false
-FetchRequest preidcate replacement option. Requires objects to be replaced be saved prior to replacing them, otherwise errors will be thrown.
-Supports replacing managed objects in: "keyPath == %@", "keyPath in %@" and "%@ contains %@" predicates, as well as compound predicates with those as sub predicates.
+Defaults to `false`.
+Requires objects to be replaced be saved prior to replacing them, otherwise errors will be thrown.
+Supports replacing managed objects in: `"keyPath == %@"`, `"keyPath in %@"` and `"%@ contains %@"` predicates, as well as compound predicates with those as sub predicates.
 
-* `SyncConflictResolutionPolicy` is an NSNumber of the raw value of one of the options in StitchStore.ConflictPolicy.
+* `SyncConflictResolutionPolicy` is an NSNumber of the raw value of one of the options in `StitchStore.ConflictPolicy`.
 Defaults to `StitchStore.ConflictPolicy.serverWins`
 
 * `CloudKitContainerIdentifier` is a String identifying which CloudKit container ID to use if your app uses an identifier which does not match your Bundle ID.
-Defaults to using `CKContainer.default().privateCloudDatabase`
+Defaults to using `CKContainer.default().privateCloudDatabase`. Important that your app on different platforms all be set to use the same CloudKit container.
 
-* `ConnectionStatusDelegate` an object which conforms to StitchConnectionStatus for asking whether we have an internet connection at the moment
+* `ConnectionStatusDelegate` an object which conforms to `StitchConnectionStatus` for asking whether we have an internet connection at the moment
 
 * `ExcludedUnchangingAsyncAssetKeys` is an array of Strings which indicate keys which should not be synced down during the main cycle due to being a large CKAsset
-Syncing down can be done later on request or demand based on application need
-Your asset containing properties should not overlap in name with other keys you want synced down to use this
-Defaults to `nil`
+Syncing down can be done later on request or demand based on application need.
+Your asset containing properties should not overlap in name with other keys you want synced down to use this.
+Defaults to `nil`.
 
-* `BackingStoreType` is a string which defines what type of backing store is to be used. Defaults to NSSQLiteStoreType and testing is done against this type. Other stores may have issues.
+* `BackingStoreType` is a string which defines what type of backing store is to be used. Defaults to `NSSQLiteStoreType` and testing is done against this type. Other stores may have issues.
 
 * `SyncOnSave` an NSNumber boolean value for whether to automatically sync when the database is told to save.
 Defaults to `true`.
 
-* `ZoneNameOption` Lets you specify a string to use as the CloudKitZone ID name
+* `ZoneNameOption` Lets you specify a string to use as the CloudKitZone ID name.
 Defaults to `StitchStore.SubscriptionInfo.CustomZoneName`
 
-* `SubscriptionNameOption` Lets you specify a string to use as the CloudKit subscription name ID
+* `SubscriptionNameOption` Lets you specify a string to use as the CloudKit subscription name ID.
 Defaults to `StitchStore.SubscriptionInfo.SubscriptioName`
 
 ## Requirements
