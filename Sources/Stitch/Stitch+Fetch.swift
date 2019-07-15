@@ -102,6 +102,13 @@ extension StitchStore
       if let caughtError = caughtError {
          throw caughtError
       }
+      if result == nil {
+         //MARK: TODO: Provide a test for sync for this
+         //This is the case for a deleted object that the view context is processing after a sync
+         //through mergeChanges(fromContextDidSave:)
+         //Return an empty store node
+         return NSIncrementalStoreNode(objectID: objectID, withValues: [:], version: 1)
+      }
       guard var backingDict = result as? Dictionary<String, NSObject> else { throw StitchStoreError.backingStoreFetchRequestError }
       for (key,value) in backingDict {
          if let string = value as? String, string == StitchStore.CloudRecordNilValue {
