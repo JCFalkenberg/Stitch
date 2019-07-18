@@ -140,10 +140,10 @@ extension StitchStore {
       operationQueue.addOperation(setupOperation)
    }
 
-   class func destroyZone(zone: CKRecordZone,
-                          in database: CKDatabase?,
-                          on queue: OperationQueue,
-                          completion: @escaping ZoneModifyCompletion)
+   public class func destroyZone(zone: CKRecordZone,
+                                 in database: CKDatabase?,
+                                 on queue: OperationQueue,
+                                 completion: @escaping ZoneModifyCompletion)
    {
       if #available(iOS 10.0, tvOS 10.0, macOS 10.12, watchOS 6.0, *) {
          let deleteSubOperation = CKModifySubscriptionsOperation(delete: zone.zoneID.zoneName,

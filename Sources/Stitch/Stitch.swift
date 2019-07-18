@@ -212,7 +212,8 @@ public class StitchStore: NSIncrementalStore {
    }()
 
    var conflictPolicy: ConflictPolicy = ConflictPolicy.serverWins
-   var database: CKDatabase?
+   fileprivate var _database: CKDatabase?
+   public var database: CKDatabase? { return _database }
    var backingModel: NSManagedObjectModel? = nil
    var backingPersistentStoreCoordinator: NSPersistentStoreCoordinator?
    var backingPersistentStore: NSPersistentStore?
@@ -258,10 +259,10 @@ public class StitchStore: NSIncrementalStore {
          conflictPolicy = policy
       }
       if let identifier = options?[Options.CloudKitContainerIdentifier] as? String {
-         database = CKContainer(identifier: identifier).privateCloudDatabase
+         _database = CKContainer(identifier: identifier).privateCloudDatabase
       }
-      if database == nil {
-         database = CKContainer.default().privateCloudDatabase
+      if _database == nil {
+         _database = CKContainer.default().privateCloudDatabase
       }
       if let status = options?[Options.ConnectionStatusDelegate] as? StitchConnectionStatus {
          connectionStatus = status
