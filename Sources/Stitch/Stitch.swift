@@ -395,6 +395,13 @@ public class StitchStore: NSIncrementalStore {
       #endif
    }
 
+   public func reloadMetadataFromDisk() -> Bool {
+      guard let tokenURL = tokenURL else { return false }
+      guard let diskMetadata = NSDictionary(contentsOf: tokenURL) as? [String : AnyObject] else { return false }
+      metadata = diskMetadata
+      return true
+   }
+
    override public func execute(_ request: NSPersistentStoreRequest,
                                 with context: NSManagedObjectContext?) throws -> Any
    {
@@ -449,6 +456,23 @@ public class StitchStore: NSIncrementalStore {
       return nil
    }
 
+   public func outwardManagedObjectIDs(for entityName: String, with backingSyncIDs: [String]) -> [NSManagedObjectID] {
+      var result = [NSManagedObjectID]()
+      let request = NSFetchRequest<NSManagedObjectID>(entityName: entityName)
+      request.predicate = NSPredicate(format: "%K in %@", StitchStore.BackingModelNames.RecordIDAttribute, backingSyncIDs)
+      request.resultType = .managedObjectIDResultType
+      self.backingMOC.performAndWait {
+         do {
+            let backingIDs = try self.backingMOC.fetch(request)
+            result = backingIDs.map {
+               return outwardManagedObjectID($0)
+            }
+         } catch {
+            print("Error retrieving backing ID's")
+         }
+      }
+      return result
+   }
    internal func outwardManagedObjectID(_ backingID: NSManagedObjectID) -> NSManagedObjectID {
       var recordID = ""
       var entityName = ""

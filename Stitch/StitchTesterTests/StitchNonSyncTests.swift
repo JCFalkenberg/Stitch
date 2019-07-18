@@ -40,6 +40,11 @@ class StitchNonSyncTests: StitchTesterRoot {
       XCTAssert(syncOperation.isAsynchronous)
    }
 
+   func testReloadMetadataFailure() {
+      //Will return false due to being an in memory store
+      XCTAssertFalse(store?.reloadMetadataFromDisk() ?? true)
+   }
+
    func testDeleteToken() {
       store?.setMetadata(Data(), key: StitchStore.Metadata.SyncTokenKey)
       XCTAssertNotNil(store?.metadata[StitchStore.Metadata.SyncTokenKey])
@@ -64,6 +69,21 @@ class StitchNonSyncTests: StitchTesterRoot {
       XCTAssertNotNil(text)
       XCTAssertEqual(text, entry?.text)
       XCTAssertEqual(store?.deletedCKRecordIDs(store!.backingMOC).count, 0)
+   }
+
+   func testOutwardObjectForBackingReference() {
+      guard let entry = addEntryAndSave() else {
+         XCTFail()
+         return
+      }
+      guard let referenceObject = store?.referenceString(for: entry.objectID) else {
+         XCTFail()
+         return
+      }
+      let backingIDs = store?.outwardManagedObjectIDs(for: entry.entityName,
+                                                      with: [referenceObject])
+      XCTAssertEqual(backingIDs?.count, 1)
+      XCTAssertEqual(entry.objectID, backingIDs?.first)
    }
 
    func testAddRelationship() {

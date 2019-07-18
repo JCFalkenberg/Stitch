@@ -28,7 +28,7 @@ extension StitchStore
          throw StitchStoreError.invalidRequest
       }
       let cloneRequest = NSBatchInsertRequest(entity: backingEntity,
-                                              andObjects: request.objectsToInsert ?? [[:]])
+                                              objects: request.objectsToInsert ?? [[:]])
       cloneRequest.resultType = .objectIDs
 
       guard let resultObject = try backingMOC.executeBatch(cloneRequest) as? NSBatchInsertResult,

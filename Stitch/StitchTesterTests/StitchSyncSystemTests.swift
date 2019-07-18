@@ -68,6 +68,21 @@ class StitchSyncSystemTests: StitchTesterRoot {
       awaitSync()
    }
 
+   func testReloadMetadataSuccess() {
+      guard var metadata = store?.metadata,
+         let url = store?.tokenURL else {
+            XCTFail("Metadata and token url shouldnt be nil")
+            return
+      }
+      metadata["TestingKey"] = "My Name is Inigo Montoya, You killed my father, prepare to die."
+      let dictionary = NSDictionary(dictionary: metadata)
+      dictionary.write(to: url, atomically: true)
+      
+      XCTAssert(store?.reloadMetadataFromDisk() ?? false)
+
+      XCTAssertEqual(store?.metadata["TestingKey"] as? String, metadata["TestingKey"] as? String)
+   }
+
    func testPushChanges() {
       guard let entry = addEntryAndSave() else {
          XCTFail("Failed to add entry")
