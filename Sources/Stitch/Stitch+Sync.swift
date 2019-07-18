@@ -9,7 +9,7 @@ import CoreData
 import CloudKit
 
 extension StitchStore {
-   func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
+   public func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
       guard let ckNotification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
       if ckNotification.notificationType != CKNotification.NotificationType.recordZone { return false }
       guard let recordZoneNotification = CKRecordZoneNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
