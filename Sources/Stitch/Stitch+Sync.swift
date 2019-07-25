@@ -9,6 +9,8 @@ import CoreData
 import CloudKit
 
 extension StitchStore {
+   /// Call to determine if a notification belongs to this store.
+   /// - Parameter userInfo: the userInfo dictionary of the remote notification
    public func isOurPushNotification(_ userInfo: [AnyHashable: Any]) -> Bool {
       guard let ckNotification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
       if ckNotification.notificationType != CKNotification.NotificationType.recordZone { return false }
@@ -16,6 +18,8 @@ extension StitchStore {
       return recordZoneNotification.recordZoneID?.zoneName == zoneID.zoneName
    }
 
+   /// Call to handle a push notification. If it's our notification, a `.push` sync will be initiated
+   /// - Parameter userInfo: the userInfo dictionary of the remote notification
    @objc public func handlePush(userInfo: [AnyHashable: Any]) {
       if isOurPushNotification(userInfo) {
          triggerSync(.push)
@@ -90,6 +94,8 @@ extension StitchStore {
       }
    }
 
+   /// This block is used for modifying record zones and either returns success (Bool) or an error result object
+   /// This is used on the class function, `destroyZone(_:)`
    public typealias ZoneModifyCompletion = (Result<(Bool), Error>) -> Void
 
    fileprivate func setupStore(_ reason: SyncTriggerType) {
@@ -140,6 +146,11 @@ extension StitchStore {
       operationQueue.addOperation(setupOperation)
    }
 
+   /// Call this to destroy a database's zone and our subscription to it, it should already be out of use before calling it.
+   /// - Parameter zone: the `CKRecordZone` to destroy
+   /// - Parameter database: the `CKDatabase` to destroy it in (optional, will default to the private database of the default container
+   /// - Parameter queue: the `OperatioNQueue` to run this operation on
+   /// - Parameter completion: a completion handler notifying you of success or failure
    public class func destroyZone(zone: CKRecordZone,
                                  in database: CKDatabase?,
                                  on queue: OperationQueue,
@@ -182,6 +193,11 @@ extension StitchStore {
       }
    }
 
+   /// This function downloads the CKAssets for externally stored binary data
+   /// - Parameter objects: the outward managed objects that you want to download assets for
+   ///
+   /// This function will download the assets in the keys defined by the store option,  `StitchStore.Options.ExcludedUnchangingAsyncAssetKeys`
+   /// Sync finished or failed notifications will be posted upon success or failure of this request
    public func downloadAssetsForOutwardObjects(_ objects: [NSManagedObject]) {
       var assetReferencesByType = [String: [String]]()
       for object in objects {

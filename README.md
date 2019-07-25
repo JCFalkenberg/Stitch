@@ -153,7 +153,22 @@ func realObjectsFromCloudKitSyncIDs(ids: Array<NSManagedObjectID>) -> Set<NSMana
 }
 ```
 
-- Enjoy!
+### Some notes on using Stitch via Swift Package Manager in Objective-C projects
+
+Swift targets managed by Swift Package Manager can't be imported in to Obj-C code directly. You will need to use some swift code around touching stuff in the Stitch module.
+
+If you want to use it in a framework, such as might be shared between main app and extensions, Xcode tries to add it as an import to the generated [ModuleName]-Swift.h for the framework which will cause it to error.
+This can be fixed by adding a private module map to the framework target. Make a file with the extension .modulemap with the contents
+```swift
+module Stitch {
+   export *
+}
+```
+Then in the build settings put your modulemap's project relative path in the setting `MODULEMAP_PRIVATE_FILE`.
+Stitch won't be accessible from Objective-C either in the framework or the app that links against it, but it will be available in Swift in either.
+
+(There may be better ways of dealing with this, but it has worked for me)
+
 
 ## Options 
 

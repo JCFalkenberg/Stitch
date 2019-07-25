@@ -8,7 +8,9 @@
 import CoreData
 import CloudKit
 
-/// StitchConnectionStatus: A protocol for determining if we have an internet connection or not, this
+/// StitchConnectionStatus: A protocol for determining if we have an internet connection or not.
+/// Without this Stitch will assume no connection and not sync.
+/// Can be passed in during store creation as an option using `StitchStore.Options.ConnectionStatusDelegate`
 @objc public protocol StitchConnectionStatus: NSObjectProtocol {
    /// internetConnectionAvailable: Bool, whether there is an internet connection available to sync on at the moment or not
    /// Can also be used to disable sync temporarily if needed for other reasons
@@ -237,6 +239,9 @@ public class StitchStore: NSIncrementalStore {
 
    weak open var connectionStatus : StitchConnectionStatus? = nil
 
+   /// init, should not be called directly by you.
+   ///
+   /// use `NSPersistentStoreCoordinator`'s `addPersistentStore` or `NSPersistentContainer` with appropriate settings
    @objc override init(persistentStoreCoordinator root: NSPersistentStoreCoordinator?,
                        configurationName name: String?,
                        at url: URL,
@@ -315,6 +320,7 @@ public class StitchStore: NSIncrementalStore {
       super.init(persistentStoreCoordinator: rooted, configurationName: name, at: url, options: options)
    }
 
+   /// Where NSIncrementalStore loads metadata, should not be called by you.
    override public func loadMetadata() throws {
       let storeType = options?[Options.BackingStoreType] as? String ?? NSSQLiteStoreType
       if !NSPersistentStoreCoordinator.registeredStoreTypes.keys.contains(storeType) {
@@ -395,6 +401,7 @@ public class StitchStore: NSIncrementalStore {
       #endif
    }
 
+   /// r`eloadMetaDataFromDisk` can be called if one process is handling syncing and telling another that sync happened
    public func reloadMetadataFromDisk() -> Bool {
       guard let tokenURL = tokenURL else { return false }
       guard let diskMetadata = NSDictionary(contentsOf: tokenURL) as? [String : AnyObject] else { return false }
@@ -402,6 +409,7 @@ public class StitchStore: NSIncrementalStore {
       return true
    }
 
+   /// DO NOT CALL DIRECTLY. Use the appropraite methods on `NSManagedObjectContext`
    override public func execute(_ request: NSPersistentStoreRequest,
                                 with context: NSManagedObjectContext?) throws -> Any
    {
@@ -434,6 +442,7 @@ public class StitchStore: NSIncrementalStore {
       return results ?? []
    }
 
+   /// DO NOT CALL DIRECTLY. Use the appropraite methods on `NSManagedObjectContext`
    public override func obtainPermanentIDs(for array: [NSManagedObject]) throws -> [NSManagedObjectID] {
       return array.map { self.newObjectID(for: $0.entity, referenceObject: UUID().uuidString) }
    }
@@ -456,6 +465,11 @@ public class StitchStore: NSIncrementalStore {
       return nil
    }
 
+   /// Returns an array of managed objectID's friendly for use in your database from backing sync ID's
+   /// - Parameter entityName: the entity the id's are for
+   /// - Parameter backingSyncIDs: an array of strings representing the backing IDs
+   ///
+   /// If any ID's are not found, they are left out of the returned array.
    public func outwardManagedObjectIDs(for entityName: String, with backingSyncIDs: [String]) -> [NSManagedObjectID] {
       var result = [NSManagedObjectID]()
       let request = NSFetchRequest<NSManagedObjectID>(entityName: entityName)
@@ -498,6 +512,9 @@ public class StitchStore: NSIncrementalStore {
       return backing
    }
 
+   /// Returns a CKRecord if it can be found for a given managed object
+   /// - Parameter outwardObject: an object from the app owned managed object context
+   /// Throws if outwardObject isn't in the database
    public func ckRecordForOutwardObject(_ outwardObject: NSManagedObject) throws -> CKRecord? {
       let backing = try backingObject(for: outwardObject)
       return backing.updatedCKRecord(zone: zoneID)

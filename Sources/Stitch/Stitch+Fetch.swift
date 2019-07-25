@@ -62,6 +62,7 @@ extension StitchStore
 
    static let CloudRecordNilValue = "@!SM_CloudStore_Record_Nil_Value"
 
+   /// DO NOT CALL DIRECTLY
    override public func newValuesForObject(with objectID: NSManagedObjectID,
                                            with context: NSManagedObjectContext) throws -> NSIncrementalStoreNode
    {
@@ -125,6 +126,7 @@ extension StitchStore
       }
       return NSIncrementalStoreNode(objectID: objectID, withValues: backingDict, version: 1)
    }
+   /// DO NOT CALL DIRECTLY
    override public func newValue(forRelationship relationship: NSRelationshipDescription,
                                  forObjectWith objectID: NSManagedObjectID,
                                  with context: NSManagedObjectContext?) throws -> Any
